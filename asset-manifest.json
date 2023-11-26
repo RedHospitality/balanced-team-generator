@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/balanced-team-generator/static/css/main.0d20adf1.css",
-    "main.js": "/balanced-team-generator/static/js/main.af27d995.js",
+    "main.css": "/balanced-team-generator/static/css/main.ec7fb367.css",
+    "main.js": "/balanced-team-generator/static/js/main.85647176.js",
     "index.html": "/balanced-team-generator/index.html",
-    "main.0d20adf1.css.map": "/balanced-team-generator/static/css/main.0d20adf1.css.map",
-    "main.af27d995.js.map": "/balanced-team-generator/static/js/main.af27d995.js.map"
+    "main.ec7fb367.css.map": "/balanced-team-generator/static/css/main.ec7fb367.css.map",
+    "main.85647176.js.map": "/balanced-team-generator/static/js/main.85647176.js.map"
   },
   "entrypoints": [
-    "static/css/main.0d20adf1.css",
-    "static/js/main.af27d995.js"
+    "static/css/main.ec7fb367.css",
+    "static/js/main.85647176.js"
   ]
 }
