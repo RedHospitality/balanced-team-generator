@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/balanced-team-generator/static/css/main.0d20adf1.css",
+    "main.js": "/balanced-team-generator/static/js/main.af27d995.js",
+    "index.html": "/balanced-team-generator/index.html",
+    "main.0d20adf1.css.map": "/balanced-team-generator/static/css/main.0d20adf1.css.map",
+    "main.af27d995.js.map": "/balanced-team-generator/static/js/main.af27d995.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.0d20adf1.css",
+    "static/js/main.af27d995.js"
+  ]
+}
