@@ -1,88 +1,129 @@
 .create-teams-workflow {
     width: 100%;
-    max-width: 800px;
+    height: 100%;
+    max-width: 1000px;
     margin: 0 auto;
+    padding: 0 10px;
+}
 
-    button:disabled {
-        background-color: #ccc;
-        cursor: not-allowed;
-    }
+.create-teams-workflow button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
 
-    button {
-        margin: 10px 10px 0px 0px;
-        background-color: rgb(232, 81, 81);
-        /* Updated button color */
-        color: white;
-        border: none;
-        border-radius: 5px;
-        padding: 10px 20px;
-        cursor: pointer;
-    }
+.create-teams-workflow button {
+    background-color: rgb(232, 81, 81);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.create-teams-workflow button:hover:not(:disabled) {
+    background-color: rgb(200, 60, 60);
 }
 
 .tabs {
     display: flex;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
+    gap: 5px;
 }
 
 .number-overlay {
     position: absolute;
     top: 50%;
-    /* Position the number in the middle vertically */
     left: 50%;
-    /* Position the number in the middle horizontally */
     transform: translate(-50%, -50%);
-    /* Offset to center within icon bounds */
     font-weight: bold;
-    /* Optional: Make the number stand out */
     color: rgb(163, 10, 10);
-    /* Optional: Adjust number color */
     font-size: 12px;
-    /* Optional: Adjust number size */
 }
 
 .tab {
-    flex-grow: 1;
-    padding: 10px;
+    flex: 1;
+    padding: 15px 10px;
     text-align: center;
     cursor: pointer;
     border: none;
-    transition: background-color 0.3s ease; /* Smooth transition for hover effect */
-    border-bottom: 2px dotted #001a00; /* Dark green dotted line for completed tab bottom border */
+    transition: all 0.3s ease;
+    border-bottom: 3px solid #ddd;
     background-color: rgb(231, 234, 229);
 }
 
 .tab:hover {
-    background-color: #c2e9c2; /* Light green for tab hover background */
+    background-color: #c2e9c2;
 }
 
 .tab.active {
-    color: #2c3e36; /* Dark green for active tab text */
-    border-bottom: 4px solid #001a00; /* Dark green for active tab bottom border */
-    background-color: #92b6a8; /* Light green for active tab background */
+    color: #2c3e36;
+    border-bottom: 4px solid #001a00;
+    background-color: #92b6a8;
+    font-weight: 600;
 }
 
 .tab.done {
-    color: #2f4d2f; /* Darker green for completed tab text */
-    background-color: #b3d6cb; /* Light green for completed tab background */
-    border-bottom: 2px solid #001a00; /* Dark green dotted line for completed tab bottom border */
-
+    color: #2f4d2f;
+    background-color: #b3d6cb;
+    border-bottom: 3px solid #001a00;
 }
 
 .dot-icon {
-    font-size: 15px; /* Adjust the size of the icons as needed */
-    color: #0b3a0b; /* Dark green for default icon color */
+    font-size: 15px;
+    color: #0b3a0b;
 }
 
 .active .dot-icon {
-    color: #0b410b; /* Darker green for active step icon */
+    color: #0b410b;
 }
 
 .done .dot-icon {
-    color: #46b846; /* Light green for completed step icon */
+    color: #46b846;
 }
 
 .content {
     border: 1px solid #ccc;
-    background-color: #fff; /* Updated background color */
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 4px;
+    min-height: 400px;
+}
+
+@media (max-width: 768px) {
+    .create-teams-workflow {
+        padding: 0 5px;
+    }
+    
+    .content {
+        padding: 15px;
+        min-height: 300px;
+    }
+    
+    .tab {
+        padding: 12px 5px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .tabs {
+        gap: 2px;
+    }
+    
+    .tab {
+        padding: 10px 3px;
+        font-size: 11px;
+    }
+    
+    .dot-icon {
+        font-size: 12px;
+    }
+    
+    .content {
+        padding: 10px;
+        min-height: auto;
+    }
 }

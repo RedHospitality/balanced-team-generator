@@ -106,9 +106,10 @@ const SelectPlayers: React.FC<SelectPlayersProps> = ({ playersData, errorMessage
                     <p>
                       Player Count: {selectedPlayers.length}
                     </p>
-                    <label className="team-count-label">
+                    <label className="team-count-label" htmlFor="team-count-slider">
                         Team Count:
                         <input
+                            id="team-count-slider"
                             type="range"
                             value={teamCount}
                             onChange={handleTeamCountChange}
@@ -116,14 +117,15 @@ const SelectPlayers: React.FC<SelectPlayersProps> = ({ playersData, errorMessage
                             max="20"
                             step="1"
                             className="team-count-slider"
+                            aria-label="Number of teams"
                         />
-                        <span className="team-count-value">{teamCount}</span>
+                        <span className="team-count-value" aria-live="polite">{teamCount}</span>
                     </label>
-                    <div>
-                    <button className="generate-teams-button" onClick={onBack}>
+                    <div className="button-group">
+                    <button className="generate-teams-button" onClick={onBack} aria-label="Go back to import players">
                         Back
                     </button>
-                    <button type="submit" className="generate-teams-button" disabled={selectedPlayers.length < 2}>
+                    <button type="submit" className="generate-teams-button" disabled={selectedPlayers.length < 2} aria-label="Confirm player selection">
                         Confirm
                     </button>
                     </div>

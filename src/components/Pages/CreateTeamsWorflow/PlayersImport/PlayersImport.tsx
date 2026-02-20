@@ -175,10 +175,15 @@ const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersDa
         <h3>Choose Data Input Type</h3>
         <div>
         <div className="dropdown-container">
+          <label htmlFor="import-type-select" style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+            Data Import Method
+          </label>
           <select
+            id="import-type-select"
             className="dropdown-type-list"
             value={dataInputType}
             onChange={(e) => setDataInputType(e.target.value as 'manual' | 'url' | 'user' | 'dynamic insert')}
+            aria-label="Select data import method"
           >
             <option value="manual">Manual Input</option>
             <option value="url">Google Spreadsheet URL</option>
@@ -194,10 +199,15 @@ const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersDa
               <p style={{ fontSize: '0.9em', color: '#666', marginBottom: '10px' }}>
                 Format: PlayerName:Rating (ratings 1-10)
               </p>
+              <label htmlFor="manual-input-textarea" style={{ display: 'block', marginBottom: '8px' }}>
+                Players Data
+              </label>
               <textarea
+                id="manual-input-textarea"
                 value={manualData}
                 onChange={(e) => setManualData(e.target.value)}
                 placeholder="Player1:7&#10;Player2:8&#10;Player3:5"
+                aria-label="Enter player names and ratings"
               />
             </div>
           )}
@@ -210,11 +220,16 @@ const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersDa
                 <strong>URL format:</strong> https://docs.google.com/spreadsheets/d/&lt;SPREADSHEET_ID&gt;/export?format=csv&amp;gid=0 (or paste the share link/ID directly)<br/>
                 <strong>Important:</strong> Sheet must be set to "Anyone with the link can view" for public access
               </p>
+              <label htmlFor="spreadsheet-url-input" style={{ display: 'block', marginBottom: '8px' }}>
+                Google Sheets URL
+              </label>
               <input
+                id="spreadsheet-url-input"
                 type="text"
                 value={spreadsheetUrl}
                 onChange={(e) => setSpreadsheetUrl(e.target.value)}
                 placeholder="Paste Google Sheets URL or just the spreadsheet ID..."
+                aria-label="Google Sheets URL or spreadsheet ID"
               />
             </div>
           )}

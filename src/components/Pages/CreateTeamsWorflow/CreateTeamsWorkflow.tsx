@@ -34,8 +34,10 @@ const CreateTeamsWorkflow = () => {
         }
     };
 
-    const handleTaskComplete = () => {
-        setTaskCompleted(true);
+    const handleRegenerate = () => {
+        // Go back to confirm selection step to regenerate teams
+        setActiveStep(3);
+        setTaskCompleted(false);
     };
 
     return (
@@ -95,6 +97,7 @@ const CreateTeamsWorkflow = () => {
                         errorMessage={errorMessage}
                         teams={teams}
                         onBack={handleBack}
+                        onRegenerate={handleRegenerate}
                     />
                 )}
             </div>
