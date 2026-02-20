@@ -20,7 +20,7 @@ const Players = () => {
   }, [userPlayers]);
 
   const handleAddPlayer = () => {
-    setUpdatedPlayersData([...updatedPlayersData, { name: '', rating: 1.0 }]);
+    setUpdatedPlayersData([...updatedPlayersData, { name: '', rating: 1 }]);
   };
 
   const handleRemovePlayer = (index: number) => {
@@ -74,18 +74,18 @@ const Players = () => {
                   value={player.rating}
                   onChange={(e) => {
                     const updatedPlayers = [...updatedPlayersData];
-                    updatedPlayers[index].rating = parseFloat(e.target.value);
+                    updatedPlayers[index].rating = parseInt(e.target.value);
                     setUpdatedPlayersData(updatedPlayers);
                   }}
                 >
-                  {[...Array(9)].map((_, i) => (
-                    <option key={i} value={(i * 0.5 + 1).toFixed(1)}>
-                      {(i * 0.5 + 1).toFixed(1)}
+                  {[...Array(10)].map((_, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      {i + 1}
                     </option>
                   ))}
                 </select>
               ) : (
-                player.rating.toFixed(1)
+                player.rating
               )}
             </div>
             <div className="add-remove-buttons">
