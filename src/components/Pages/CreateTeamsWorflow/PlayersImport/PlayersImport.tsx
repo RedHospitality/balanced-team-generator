@@ -32,22 +32,57 @@ const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersDa
       );
     }
 
+    console.log('Fetching from normalized URL:', normalizedUrl);
+
     try {
-      const response = await fetch(normalizedUrl);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+      const response = await fetch(normalizedUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'text/csv',
+        },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
+        console.error(`HTTP Error: ${response.status} ${response.statusText}`);
         throw new Error(
-          `Failed to fetch sheet (${response.status}). Check if the sheet is publicly accessible (set to "Anyone with link can view").`
+          `Failed to fetch sheet (HTTP ${response.status}). Ensure the sheet is publicly accessible (set to "Anyone with link can view").`
         );
       }
+
       const data = await response.text();
+      
+      // Check if we got valid CSV data
+      if (!data || data.trim().length === 0) {
+        throw new Error('Sheet returned empty data. Check if the sheet has data and is accessible.');
+      }
+      
+      // Check if we got an HTML error page instead of CSV
+      if (data.includes('<html') || data.includes('<!DOCTYPE')) {
+        throw new Error('Received HTML instead of CSV data. The sheet may not be publicly accessible or the URL may be incorrect.');
+      }
+
       return data;
     } catch (err) {
-      if (err instanceof Error && err.message.includes('Failed to fetch')) {
-        throw new Error(
-          'Network error: Could not reach Google Sheets. Check your internet connection or sheet permissions.'
-        );
+      let errorMessage = 'Unknown error occurred';
+      
+      if (err instanceof Error) {
+        if (err.name === 'AbortError') {
+          errorMessage = 'Request timed out after 10 seconds. The sheet may be unavailable or very slow.';
+        } else if (err.message.includes('Failed to fetch')) {
+          errorMessage = `Network error: ${err.message}. Check your internet connection and ensure the sheet is publicly shared ("Anyone with link can view").`;
+        } else {
+          errorMessage = err.message;
+        }
       }
-      throw err;
+      
+      console.error('Fetch error details:', err);
+      throw new Error(errorMessage);
     }
   };
 
@@ -214,21 +249,26 @@ const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersDa
 
           {dataInputType === 'url' && (
             <div>
-              <h4>Google Spreadsheet CSV URL</h4>
+              <h4>Google Spreadsheet</h4>
               <p style={{ fontSize: '0.9em', color: '#666', marginBottom: '10px' }}>
-                <strong>Expected format:</strong> CSV with columns Name and Rating (1-10 whole numbers)<br/>
-                <strong>URL format:</strong> https://docs.google.com/spreadsheets/d/&lt;SPREADSHEET_ID&gt;/export?format=csv&amp;gid=0 (or paste the share link/ID directly)<br/>
-                <strong>Important:</strong> Sheet must be set to "Anyone with the link can view" for public access
+                <strong>📋 Data Format:</strong> CSV with two columns: Name and Rating (1-10 whole numbers)<br/>
+                <strong>🔗 Accepted URL Formats:</strong> We support ALL Google Sheets URL formats:<br/>
+                &nbsp;&nbsp;• Share link: <code>https://docs.google.com/spreadsheets/d/{'{'}ID{'}'}/edit?usp=sharing</code><br/>
+                &nbsp;&nbsp;• Edit link: <code>https://docs.google.com/spreadsheets/d/{'{'}ID{'}'}/edit</code><br/>
+                &nbsp;&nbsp;• Mobile/iPad links<br/>
+                &nbsp;&nbsp;• Just paste the ID: <code>{'{'}ID{'}'}</code><br/>
+                <strong>🔐 Permission:</strong> Sheet must be set to <strong>"Anyone with the link can view"</strong> (open sharing settings)<br/>
+                <strong>💡 Tip:</strong> Copy the link directly from Google Sheets share button - we'll auto-detect the format!
               </p>
               <label htmlFor="spreadsheet-url-input" style={{ display: 'block', marginBottom: '8px' }}>
-                Google Sheets URL
+                Google Sheets URL or Spreadsheet ID
               </label>
               <input
                 id="spreadsheet-url-input"
                 type="text"
                 value={spreadsheetUrl}
                 onChange={(e) => setSpreadsheetUrl(e.target.value)}
-                placeholder="Paste Google Sheets URL or just the spreadsheet ID..."
+                placeholder="Paste any Google Sheets link here..."
                 aria-label="Google Sheets URL or spreadsheet ID"
               />
             </div>
@@ -275,8 +315,8 @@ const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersDa
 
 
           {importError && (
-            <div style={{ color: '#d32f2f', fontSize: '0.95em', marginBottom: '15px', padding: '10px', backgroundColor: '#ffebee', borderRadius: '4px' }}>
-              <strong>Error:</strong> {importError}
+            <div style={{ color: '#d32f2f', fontSize: '0.95em', marginBottom: '15px', padding: '12px', backgroundColor: '#ffebee', borderRadius: '4px', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+              <strong>⚠️ Error:</strong> {importError}
             </div>
           )}
 
