@@ -1,4 +1,4 @@
-import { PlayerModel } from '../components/Pages/CreateTeamsWorflow/Models/CreateTeamsModels';
+import { PlayerModel, TeamModel } from '../components/Pages/CreateTeamsWorflow/Models/CreateTeamsModels';
 
 /**
  * Rounds a rating to the nearest whole number between 1-10.
@@ -39,16 +39,16 @@ export function normalizePlayers(players: PlayerModel[]): PlayerModel[] {
 }
 
 /**
- * Groups players by their rating into a map where key is rating and value is array of player names.
+ * Groups players by their rating into a map where key is rating and value is array of players.
  * Ratings are sorted in descending order (highest first).
  *
  * @param players Array of normalized players
- * @returns Sorted array of [rating, playerNames[]] tuples in descending order by rating
+ * @returns Sorted array of [rating, players[]] tuples in descending order by rating
  */
 export function groupPlayersByRatingDescending(
   players: PlayerModel[]
-): Array<[number, string[]]> {
-  const groups = new Map<number, string[]>();
+): Array<[number, PlayerModel[]]> {
+  const groups = new Map<number, PlayerModel[]>();
 
   // Group players by rating
   players.forEach((player) => {
@@ -56,7 +56,7 @@ export function groupPlayersByRatingDescending(
     if (!groups.has(rating)) {
       groups.set(rating, []);
     }
-    groups.get(rating)!.push(player.name);
+    groups.get(rating)!.push(player);
   });
 
   // Sort ratings in descending order and return as array of tuples
@@ -102,45 +102,43 @@ export function findSmallestTeamIndex(totalRatings: number[]): number {
  * Assigns a single player to the team with the smallest total rating.
  * Updates both the team roster and total ratings array.
  *
- * @param playerName Name of player to assign
- * @param playerRating Rating of player
- * @param teams Array of teams (each is array of "name: rating" strings)
+ * @param player Player object with name and rating
+ * @param teams Array of player arrays for each team
  * @param totalRatings Array of cumulative ratings for each team
  */
 export function assignPlayerToLightestTeam(
-  playerName: string,
-  playerRating: number,
-  teams: string[][],
+  player: PlayerModel,
+  teams: PlayerModel[][],
   totalRatings: number[]
 ): void {
   const teamIndex = findSmallestTeamIndex(totalRatings);
-  teams[teamIndex].push(`${playerName}: ${playerRating}`);
-  totalRatings[teamIndex] += playerRating;
+  teams[teamIndex].push(player);
+  totalRatings[teamIndex] += player.rating;
 }
 
 /**
  * Distributes players across teams in descending rating order.
  * For each player group (by rating), shuffles players and assigns each to the lightest team.
  *
- * @param ratingGroups Sorted array of [rating, playerNames[]] tuples (descending)
+ * @param ratingGroups Sorted array of [rating, players[]] tuples (descending)
  * @param teamCount Number of teams
- * @returns Array of teams, each containing player strings (name: rating)
+ * @returns Array of teams, each containing PlayerModel objects
  */
 export function distributePlayersAcrossTeams(
-  ratingGroups: Array<[number, string[]]>,
+  ratingGroups: Array<[number, PlayerModel[]]>,
   teamCount: number
-): string[][] {
-  const teams: string[][] = Array.from({ length: teamCount }, () => []);
+): PlayerModel[][] {
+  const teams: PlayerModel[][] = Array.from({ length: teamCount }, () => []);
   const totalRatings: number[] = Array.from({ length: teamCount }, () => 0);
 
   // Iterate through each rating group (highest first due to descending sort)
-  ratingGroups.forEach(([rating, playerNames]) => {
+  ratingGroups.forEach(([rating, players]) => {
     // Shuffle players within this rating group for variety
-    shuffleArray(playerNames);
+    shuffleArray(players);
 
     // Assign each player to the lightest team
-    playerNames.forEach((playerName) => {
-      assignPlayerToLightestTeam(playerName, rating, teams, totalRatings);
+    players.forEach((player) => {
+      assignPlayerToLightestTeam(player, teams, totalRatings);
     });
   });
 
@@ -158,13 +156,13 @@ export function distributePlayersAcrossTeams(
  *
  * @param players Array of players with name and rating
  * @param teamCount Number of teams to create
- * @returns Array of teams, each containing player strings (name: rating)
+ * @returns Array of TeamModel objects with players and totalRating
  * @throws Error if invalid input
  */
 export function allocatePlayersToTeams(
   players: PlayerModel[],
   teamCount: number
-): string[][] {
+): TeamModel[] {
   // Validate input
   if (teamCount < 1) {
     throw new Error('Team count must be at least 1');
@@ -183,10 +181,16 @@ export function allocatePlayersToTeams(
   const ratingGroups = groupPlayersByRatingDescending(normalizedPlayers);
 
   // Step 3-4: Distribute across teams (shuffles within groups and assigns to lightest team)
-  const generatedTeams = distributePlayersAcrossTeams(ratingGroups, teamCount);
+  const playerTeams = distributePlayersAcrossTeams(ratingGroups, teamCount);
+
+  // Calculate total ratings for each team
+  const teams: TeamModel[] = playerTeams.map((team) => ({
+    players: team,
+    totalRating: team.reduce((sum, player) => sum + player.rating, 0),
+  }));
 
   // Step 5: Shuffle final team order for variety (teams are not ranked)
-  shuffleArray(generatedTeams);
+  shuffleArray(teams);
 
-  return generatedTeams;
+  return teams;
 }

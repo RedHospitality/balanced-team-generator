@@ -15,7 +15,7 @@ interface PlayersImportProps {
 }
 
 const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersData, onNext }) => {
-  const [dataInputType, setDataInputType] = useState<'manual' | 'url' | 'user' | 'dynamic insert'>('manual');
+  const [dataInputType, setDataInputType] = useState<'manual' | 'url' | 'user' | 'dynamic insert'>('url');
   const [manualData, setManualData] = useState<string>('');
   const [spreadsheetUrl, setSpreadsheetUrl] = useState<string>('');
   const [dynamicPlayers, setDynamicPlayers] = useState<PlayerModel[]>([{ name: '', rating: 1 }]);

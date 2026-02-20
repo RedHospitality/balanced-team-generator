@@ -8,14 +8,15 @@ import DisplayTeams from './DisplayTeams/DisplayTeams';
 import SelectPlayers from './SelectPlayers/SelectPlayers';
 import ConfirmSelection from './ConfirmSelection/ConfirmSelection';
 import PlayersImport from './PlayersImport/PlayersImport';
-import { PlayerModel } from './Models/CreateTeamsModels';
+import { PlayerModel, TeamModel } from './Models/CreateTeamsModels';
+import { allocatePlayersToTeams } from '../../../utils/teamUtils';
 
 const CreateTeamsWorkflow = () => {
     const [activeStep, setActiveStep] = useState(1);
     const [taskCompleted, setTaskCompleted] = useState(false);
     const [playersData, setPlayersData] = useState<PlayerModel[]>([]);
     const [selectedPlayers, setSelectedPlayers] = useState<PlayerModel[]>([]);
-    const [teams, setTeams] = useState<string[][]>([]);
+    const [teams, setTeams] = useState<TeamModel[]>([]);
     const [teamCount, setTeamCount] = useState<number>(2);
     const [errorMessage, setErrorMessage] = useState<string | undefined>("No Selected Players");
 
@@ -35,9 +36,14 @@ const CreateTeamsWorkflow = () => {
     };
 
     const handleRegenerate = () => {
-        // Go back to confirm selection step to regenerate teams
-        setActiveStep(3);
-        setTaskCompleted(false);
+        // Regenerate teams in place without navigating
+        try {
+            const generatedTeams = allocatePlayersToTeams(selectedPlayers, teamCount);
+            setTeams(generatedTeams);
+            setErrorMessage(undefined);
+        } catch (error) {
+            setErrorMessage(error instanceof Error ? error.message : "Error regenerating teams");
+        }
     };
 
     return (

@@ -34,12 +34,38 @@
     width: 100%;
 }
 
-.team {
+.teams-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     margin-bottom: 20px;
-    padding: 15px;
-    background-color: #f9f9f9;
-    border-radius: 5px;
-    border: 1px solid #ddd;
+}
+
+.teams-header h2 {
+    margin: 0;
+    color: #008080;
+}
+
+.refresh-btn {
+    background-color: transparent;
+    border: 2px solid #008080;
+    color: #008080;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    padding: 0;
+}
+
+.refresh-btn:hover {
+    background-color: #008080;
+    color: white;
+    transform: rotate(180deg);
 }
 
 .team p {
@@ -47,6 +73,26 @@
     font-weight: 600;
     color: #008080;
     font-size: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.avg-rating {
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    background-color: #f0f0f0;
+    padding: 4px 10px;
+    border-radius: 4px;
+}
+
+.team {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    border: 1px solid #ddd;
 }
 
 .team ul {
@@ -63,7 +109,6 @@
 
 .display-share-btn,
 .display-copy-btn,
-.display-regenerate-btn,
 .display-back-btn {
     background-color: rgb(232, 81, 81);
     color: white;
@@ -85,8 +130,7 @@
 }
 
 .display-share-btn:hover,
-.display-copy-btn:hover,
-.display-regenerate-btn:hover {
+.display-copy-btn:hover {
     background-color: rgb(200, 60, 60);
 }
 
@@ -98,17 +142,8 @@
     background-color: #5a6268;
 }
 
-.display-regenerate-btn {
-    background-color: #28a745;
-}
-
-.display-regenerate-btn:hover {
-    background-color: #218838;
-}
-
 .display-share-btn:disabled,
 .display-copy-btn:disabled,
-.display-regenerate-btn:disabled,
 .display-back-btn:disabled {
     background-color: #ccc;
     cursor: not-allowed;
@@ -116,6 +151,12 @@
 }
 
 @media (max-width: 768px) {
+    .teams-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
     .team {
         padding: 12px;
     }
@@ -126,7 +167,6 @@
     
     .display-share-btn,
     .display-copy-btn,
-    .display-regenerate-btn,
     .display-back-btn {
         width: 100%;
         max-width: 100%;

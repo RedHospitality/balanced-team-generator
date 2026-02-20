@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import './ConfirmSelection.css';
-import { PlayerModel } from '../Models/CreateTeamsModels';
+import { PlayerModel, TeamModel } from '../Models/CreateTeamsModels';
 import { allocatePlayersToTeams, shuffleArray } from '../../../../utils/teamUtils';
 
 interface ConfirmSelectionProps {
     setErrorMessage: (message: string | undefined) => void,
-    setTeams: React.Dispatch<React.SetStateAction<string[][]>>
+    setTeams: React.Dispatch<React.SetStateAction<TeamModel[]>>
     selectedPlayers: PlayerModel[],
     teamCount: number,
     onNext: () => void,
@@ -25,9 +25,6 @@ const ConfirmSelection: React.FC<ConfirmSelectionProps> = ({ setErrorMessage, se
         try {
             // Use modular allocation logic: groups by rating, assigns to lightest team
             const generatedTeams = allocatePlayersToTeams(selectedPlayers, teamCount);
-            
-            // Shuffle team order for variety (teams are not ranked)
-            shuffleArray(generatedTeams);
             
             setTeams(generatedTeams);
             setErrorMessage(undefined);

@@ -1,12 +1,13 @@
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { faShareFromSquare, faCopy } from '@fortawesome/free-solid-svg-icons';
+import { faShareFromSquare, faCopy, faRefresh } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
+import { TeamModel } from '../Models/CreateTeamsModels';
 import './DisplayTeams.css';
 
 interface DisplayTeamsProps {
     errorMessage: string | undefined,
-    teams: string[][],
+    teams: TeamModel[],
     onBack: () => void,
     onRegenerate?: () => void,
 }
@@ -15,7 +16,12 @@ const DisplayTeams: React.FC<DisplayTeamsProps> = ({ errorMessage, teams, onBack
 
     const handleShare = async () => {
         const teamsText = teams
-            .map((team, index) => `Team ${index + 1}\n${team.map(player => player.split(":")[0]).join('\n')}`)
+            .map((team, index) => {
+                const playerList = team.players
+                    .map((player, playerIndex) => `${playerIndex + 1}. ${player.name}`)
+                    .join('\n');
+                return `Team ${index + 1} (Avg Rating: ${team.totalRating / team.players.length})\n${playerList}`;
+            })
             .join('\n\n');
         try {
             // Trigger the native sharing dialog
@@ -36,7 +42,12 @@ const DisplayTeams: React.FC<DisplayTeamsProps> = ({ errorMessage, teams, onBack
 
     const handleCopy = async () => {
         const teamsText = teams
-            .map((team, index) => `Team ${index + 1}\n${team.map(player => player.split(":")[0]).join('\n')}`)
+            .map((team, index) => {
+                const playerList = team.players
+                    .map((player, playerIndex) => `${playerIndex + 1}. ${player.name}`)
+                    .join('\n');
+                return `Team ${index + 1} (Avg Rating: ${team.totalRating / team.players.length})\n${playerList}`;
+            })
             .join('\n\n');
         try {
             await navigator.clipboard.writeText(teamsText);
@@ -60,13 +71,25 @@ const DisplayTeams: React.FC<DisplayTeamsProps> = ({ errorMessage, teams, onBack
 
             {teams && !errorMessage &&
                 <div className="team-container">
-                    <h2><strong>Generated Teams</strong></h2>
+                    <div className="teams-header">
+                        <h2><strong>Generated Teams</strong></h2>
+                        {onRegenerate && (
+                            <button 
+                                className="refresh-btn" 
+                                onClick={onRegenerate} 
+                                aria-label="Generate new teams"
+                                title="Regenerate Team"
+                            >
+                                <FontAwesomeIcon icon={faRefresh as IconProp} />
+                            </button>
+                        )}
+                    </div>
                     {teams.map((team, index) => (
                         <div key={index} className="team">
-                            <p><strong>Team {index + 1}:</strong></p>
+                            <p><strong>Team {index + 1}:</strong> <span className="avg-rating">Avg Rating: {(team.totalRating / team.players.length).toFixed(2)}</span></p>
                             <ul>
-                                {team.map((player, playerIndex) => (
-                                    <li key={playerIndex}>{player}</li>
+                                {team.players.map((player, playerIndex) => (
+                                    <li key={playerIndex}>{playerIndex + 1}. {player.name}</li>
                                 ))}
                             </ul>
                         </div>
@@ -81,11 +104,6 @@ const DisplayTeams: React.FC<DisplayTeamsProps> = ({ errorMessage, teams, onBack
                             <FontAwesomeIcon icon={faCopy as IconProp} />
                             {" Copy"}
                         </button>
-                        {onRegenerate && (
-                            <button className="display-regenerate-btn" onClick={onRegenerate} aria-label="Generate new teams">
-                                Generate New Teams
-                            </button>
-                        )}
                         <button className="display-back-btn" onClick={onBack} aria-label="Go back to confirm selection">
                             Back
                         </button>
