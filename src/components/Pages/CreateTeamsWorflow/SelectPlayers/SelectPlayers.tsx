@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './SelectPlayers.css';
 import { PlayerModel } from '../Models/CreateTeamsModels';
+import { getPlayerData } from '../../../../utils/cookieUtils';
 
 interface SelectPlayersProps {
     playersData: PlayerModel[],
@@ -16,15 +17,14 @@ interface SelectPlayersProps {
 
 const SelectPlayers: React.FC<SelectPlayersProps> = ({ playersData, errorMessage, setErrorMessage, selectedPlayers,
     setSelectedPlayers, teamCount, setTeamCount, onBack, onNext }) => {
-    const [numberOfTeams, setNumberOfTeams] = useState(2);
-    const initSelectAll = selectedPlayers? selectedPlayers.length === playersData.length? 'Yes': 'Some': 'No';
+    const initSelectAll = selectedPlayers ? selectedPlayers.length === playersData.length ? 'Yes' : 'Some' : 'No';
     const [selectAll, setSelectAll] = useState<string>(initSelectAll);
 
     // Function to handle checkbox change
     const handleCheckboxChange = (player: PlayerModel) => {
         if (player.name === 'Select All') {
             // Toggle selectAll state
-            setSelectAll(selectAll == 'Yes'? 'No': 'Yes');
+            setSelectAll(selectAll === 'Yes' ? 'No' : 'Yes');
         } else {
             // Update selectedPlayers based on player selection
             setSelectedPlayers(prevSelectedPlayers => {
@@ -40,13 +40,12 @@ const SelectPlayers: React.FC<SelectPlayersProps> = ({ playersData, errorMessage
 
     // Update selectAll state based on selectedPlayers
     useEffect(() => {
-        if (selectedPlayers.length === playersData.length) {
+        if (selectedPlayers.length === playersData.length && playersData.length > 0) {
             setSelectAll('Yes');
-        } else if (selectedPlayers.length > 0){
+        } else if (selectedPlayers.length > 0) {
             setSelectAll('Some');
-        }
-        else{
-          setSelectAll('No');
+        } else {
+            setSelectAll('No');
         }
     }, [selectedPlayers, playersData]);
 
@@ -54,10 +53,10 @@ const SelectPlayers: React.FC<SelectPlayersProps> = ({ playersData, errorMessage
     useEffect(() => {
         if (selectAll === 'Yes') {
             setSelectedPlayers(playersData);
-        } else if(selectAll === 'No'){
+        } else if (selectAll === 'No') {
             setSelectedPlayers([]);
         }
-    }, [selectAll]);
+    }, [selectAll, playersData, setSelectedPlayers]);
 
     // Function to handle team count change
     const handleTeamCountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -80,6 +79,17 @@ const SelectPlayers: React.FC<SelectPlayersProps> = ({ playersData, errorMessage
     return (
         <div className='team-selection-container'>
             <h2>Team Selection</h2>
+            {(() => {
+                const cookieData = getPlayerData();
+                return cookieData ? (
+                    <div style={{ textAlign: 'center', marginBottom: '15px', padding: '10px', backgroundColor: '#f0f0f0', borderRadius: '4px' }}>
+                        <strong>Total Players Imported: {cookieData.players.length}</strong>
+                        <span style={{ marginLeft: '10px', fontSize: '0.9em', color: '#666' }}>
+                            (Import Type: {cookieData.importType})
+                        </span>
+                    </div>
+                ) : null;
+            })()}
             <div className="sub-container">
                 <h3>Player List</h3>
                 <form onSubmit={handleConfirmSelection} className="form">
@@ -113,8 +123,8 @@ const SelectPlayers: React.FC<SelectPlayersProps> = ({ playersData, errorMessage
                             type="range"
                             value={teamCount}
                             onChange={handleTeamCountChange}
-                            min="2"
-                            max="20"
+                            min="1"
+                            max={selectedPlayers.length || 1}
                             step="1"
                             className="team-count-slider"
                             aria-label="Number of teams"

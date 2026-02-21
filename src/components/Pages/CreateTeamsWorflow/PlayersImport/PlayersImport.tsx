@@ -1,12 +1,13 @@
 import React, { useContext, useState } from 'react';
 import './PlayersImport.css';
-import { PlayerModel } from '../Models/CreateTeamsModels';
+import { PlayerModel, PlayerData } from '../Models/CreateTeamsModels';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMinus, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { UserContext } from '../../../../App';
 import { normalizeRating } from '../../../../utils/teamUtils';
-import { normalizeGoogleSheetsUrl, normalizeUrlWithError } from '../../../../utils/urlUtils';
+import { normalizeGoogleSheetsUrl } from '../../../../utils/urlUtils';
+import { storePlayerData, getPlayerData } from '../../../../utils/cookieUtils';
 
 interface PlayersImportProps {
   playersData: PlayerModel[],
@@ -15,21 +16,34 @@ interface PlayersImportProps {
 }
 
 const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersData, onNext }) => {
-  const [dataInputType, setDataInputType] = useState<'manual' | 'url' | 'user' | 'dynamic insert'>('url');
+  const [dataInputType, setDataInputType] = useState<'manual' | 'spreadsheet' | 'user' | 'dynamic insert'>('spreadsheet');
   const [manualData, setManualData] = useState<string>('');
   const [spreadsheetUrl, setSpreadsheetUrl] = useState<string>('');
+  const [spreadsheetType, setSpreadsheetType] = useState<'google' | 'microsoft'>('google');
   const [dynamicPlayers, setDynamicPlayers] = useState<PlayerModel[]>([{ name: '', rating: 1 }]);
   const [importError, setImportError] = useState<string | undefined>(undefined);
   const userPlayers = useContext(UserContext).userPlayers;
 
-  const fetchDataFromUrl = async (url: string): Promise<string> => {
-    // Normalize the URL to standard CSV export format
-    const normalizedUrl = normalizeGoogleSheetsUrl(url);
-    if (!normalizedUrl) {
-      throw new Error(
-        'Invalid Google Sheets URL. Please ensure the URL is in format: ' +
-        'https://docs.google.com/spreadsheets/d/{ID}/edit or paste the spreadsheet ID directly.'
-      );
+  const fetchDataFromUrl = async (url: string, type: 'google' | 'microsoft'): Promise<string> => {
+    let normalizedUrl: string | null = null;
+
+    if (type === 'google') {
+      normalizedUrl = normalizeGoogleSheetsUrl(url);
+      if (!normalizedUrl) {
+        throw new Error(
+          'Invalid Google Sheets URL. Please ensure the URL is in format: ' +
+          'https://docs.google.com/spreadsheets/d/{ID}/edit or paste the spreadsheet ID directly.'
+        );
+      }
+    } else if (type === 'microsoft') {
+      // For Microsoft Excel online, we need to handle different URL formats
+      // This is a simplified version - you might need to expand this based on actual Microsoft API
+      if (url.includes('onedrive.live.com') || url.includes('docs.microsoft.com')) {
+        // Convert to CSV export URL - this might need adjustment based on actual Microsoft API
+        normalizedUrl = url.replace('/edit', '/export?format=csv');
+      } else {
+        throw new Error('Invalid Microsoft Excel URL. Please provide a valid Excel Online sharing URL.');
+      }
     }
 
     console.log('Fetching from normalized URL:', normalizedUrl);
@@ -38,7 +52,7 @@ const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersDa
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-      const response = await fetch(normalizedUrl, {
+      const response = await fetch(normalizedUrl!, {
         method: 'GET',
         headers: {
           'Accept': 'text/csv',
@@ -50,9 +64,10 @@ const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersDa
 
       if (!response.ok) {
         console.error(`HTTP Error: ${response.status} ${response.statusText}`);
-        throw new Error(
-          `Failed to fetch sheet (HTTP ${response.status}). Ensure the sheet is publicly accessible (set to "Anyone with link can view").`
-        );
+        const errorMsg = type === 'google'
+          ? `Failed to fetch sheet (HTTP ${response.status}). Ensure the sheet is publicly accessible ("Anyone with link can view").`
+          : `Failed to fetch Excel file (HTTP ${response.status}). Ensure the file is publicly shared.`;
+        throw new Error(errorMsg);
       }
 
       const data = await response.text();
@@ -119,24 +134,44 @@ const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersDa
   /*TODO: Remove, just populating dummy data for now. */
   React.useEffect(()=> {
     if(dataInputType === 'user'){
-      setPlayersData(userPlayers);
+      const cookieData = getPlayerData();
+      if (cookieData) {
+        setPlayersData(cookieData.players);
+      } else {
+        // If no cookie data, reset to empty and maybe show error
+        setPlayersData([]);
+        setImportError('No saved player data found. Please import players first.');
+      }
     }
-  }, [dataInputType]);
+  }, [dataInputType, setPlayersData]);
 
   const handleProcessData = async () => {
     try {
       setImportError(undefined);
       let processedPlayers: PlayerModel[] = [];
+      let importType: 'Manual' | 'Dynamic Insert' | 'Spreadsheet' = 'Manual';
+      let importUrl: string | undefined;
 
-      if (dataInputType === 'url') {
-        const dataToProcess = await fetchDataFromUrl(spreadsheetUrl);
+      if (dataInputType === 'spreadsheet') {
+        const dataToProcess = await fetchDataFromUrl(spreadsheetUrl, spreadsheetType);
         processedPlayers = processDataToDisplay(dataToProcess, ',');
+        importType = 'Spreadsheet';
+        importUrl = spreadsheetUrl;
       } else if (dataInputType === 'manual') {
         processedPlayers = processDataToDisplay(manualData, ':');
-      } else if (dataInputType === 'dynamic insert') {
-        processedPlayers = [...dynamicPlayers.filter(player => player.name && player.rating)];
+        importType = 'Manual';
+      } else if (dataInputType === 'user') {
+        const cookieData = getPlayerData();
+        if (cookieData) {
+          processedPlayers = cookieData.players;
+          importType = cookieData.importType;
+          importUrl = cookieData.importUrl;
+        } else {
+          throw new Error('No saved player data found. Please import players first.');
+        }
       } else {
         processedPlayers = userPlayers;
+        importType = 'Manual'; // Default for user players
       }
 
       // Validate minimum player count
@@ -144,6 +179,14 @@ const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersDa
         setImportError('Please import at least 2 players to form teams.');
         return;
       }
+
+      // Store in cookies
+      const playerData: PlayerData = {
+        players: processedPlayers,
+        importType,
+        importUrl
+      };
+      storePlayerData(playerData);
 
       setPlayersData(processedPlayers);
       onNext();
@@ -155,7 +198,7 @@ const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersDa
   };
 
   const disableProcessButton = () => {
-    if (dataInputType === 'url') {
+    if (dataInputType === 'spreadsheet') {
       return !spreadsheetUrl;
     }
     else if (dataInputType === 'manual') {
@@ -164,6 +207,9 @@ const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersDa
     else if (dataInputType === 'dynamic insert') {
       const allPlayers = [...dynamicPlayers.filter(player => player.name && player.rating)];
       return allPlayers.length < 2;
+    }
+    else if (dataInputType === 'user') {
+      return !getPlayerData();
     }
     return undefined;
   }
@@ -217,12 +263,12 @@ const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersDa
             id="import-type-select"
             className="dropdown-type-list"
             value={dataInputType}
-            onChange={(e) => setDataInputType(e.target.value as 'manual' | 'url' | 'user' | 'dynamic insert')}
+            onChange={(e) => setDataInputType(e.target.value as 'manual' | 'spreadsheet' | 'user' | 'dynamic insert')}
             aria-label="Select data import method"
           >
             <option value="manual">Manual Input</option>
-            <option value="url">Google Spreadsheet URL</option>
-            <option value="user">Use My Players</option>
+            <option value="spreadsheet">Spreadsheet URL</option>
+            {getPlayerData() && <option value="user">Use My Players</option>}
             <option value="dynamic insert">Dynamic Insert</option>
           </select>
         </div>
@@ -247,29 +293,61 @@ const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersDa
             </div>
           )}
 
-          {dataInputType === 'url' && (
+          {dataInputType === 'spreadsheet' && (
             <div>
-              <h4>Google Spreadsheet</h4>
-              <p style={{ fontSize: '0.9em', color: '#666', marginBottom: '10px' }}>
-                <strong>📋 Data Format:</strong> CSV with two columns: Name and Rating (1-10 whole numbers)<br/>
-                <strong>🔗 Accepted URL Formats:</strong> We support ALL Google Sheets URL formats:<br/>
-                &nbsp;&nbsp;• Share link: <code>https://docs.google.com/spreadsheets/d/{'{'}ID{'}'}/edit?usp=sharing</code><br/>
-                &nbsp;&nbsp;• Edit link: <code>https://docs.google.com/spreadsheets/d/{'{'}ID{'}'}/edit</code><br/>
-                &nbsp;&nbsp;• Mobile/iPad links<br/>
-                &nbsp;&nbsp;• Just paste the ID: <code>{'{'}ID{'}'}</code><br/>
-                <strong>🔐 Permission:</strong> Sheet must be set to <strong>"Anyone with the link can view"</strong> (open sharing settings)<br/>
-                <strong>💡 Tip:</strong> Copy the link directly from Google Sheets share button - we'll auto-detect the format!
-              </p>
+              <h4>Spreadsheet Import</h4>
+              
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+                  Select Spreadsheet Type:
+                </label>
+                <div style={{ display: 'flex', gap: '20px' }}>
+                  <label>
+                    <input
+                      type="radio"
+                      value="google"
+                      checked={spreadsheetType === 'google'}
+                      onChange={(e) => setSpreadsheetType(e.target.value as 'google' | 'microsoft')}
+                    />
+                    Google Sheets
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      value="microsoft"
+                      checked={spreadsheetType === 'microsoft'}
+                      onChange={(e) => setSpreadsheetType(e.target.value as 'google' | 'microsoft')}
+                    />
+                    Microsoft Excel
+                  </label>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '15px' }}>
+                <strong>Requirements:</strong>
+                {spreadsheetType === 'google' ? (
+                  <p style={{ fontSize: '0.9em', color: '#666', margin: '5px 0' }}>
+                    • Sheet must be publicly accessible ("Anyone with the link can view")<br/>
+                    • First column: Player names, Second column: Ratings (1-10)
+                  </p>
+                ) : (
+                  <p style={{ fontSize: '0.9em', color: '#666', margin: '5px 0' }}>
+                    • Excel file must be shared publicly<br/>
+                    • First column: Player names, Second column: Ratings (1-10)
+                  </p>
+                )}
+              </div>
+
               <label htmlFor="spreadsheet-url-input" style={{ display: 'block', marginBottom: '8px' }}>
-                Google Sheets URL or Spreadsheet ID
+                Spreadsheet URL
               </label>
               <input
                 id="spreadsheet-url-input"
                 type="text"
                 value={spreadsheetUrl}
                 onChange={(e) => setSpreadsheetUrl(e.target.value)}
-                placeholder="Paste any Google Sheets link here..."
-                aria-label="Google Sheets URL or spreadsheet ID"
+                placeholder="Paste your spreadsheet URL here..."
+                aria-label="Spreadsheet URL"
               />
             </div>
           )}

@@ -20,7 +20,7 @@ const DisplayTeams: React.FC<DisplayTeamsProps> = ({ errorMessage, teams, onBack
                 const playerList = team.players
                     .map((player, playerIndex) => `${playerIndex + 1}. ${player.name}`)
                     .join('\n');
-                return `Team ${index + 1} (Avg Rating: ${team.totalRating / team.players.length})\n${playerList}`;
+                return `Team ${index + 1} (Avg Rating: ${(team.totalRating / team.players.length).toFixed(2)})\n${playerList}`;
             })
             .join('\n\n');
         try {
@@ -46,7 +46,7 @@ const DisplayTeams: React.FC<DisplayTeamsProps> = ({ errorMessage, teams, onBack
                 const playerList = team.players
                     .map((player, playerIndex) => `${playerIndex + 1}. ${player.name}`)
                     .join('\n');
-                return `Team ${index + 1} (Avg Rating: ${team.totalRating / team.players.length})\n${playerList}`;
+                return `Team ${index + 1} (Avg Rating: ${(team.totalRating / team.players.length).toFixed(2)})\n${playerList}`;
             })
             .join('\n\n');
         try {
@@ -69,6 +69,12 @@ const DisplayTeams: React.FC<DisplayTeamsProps> = ({ errorMessage, teams, onBack
         <div className='team-display-container'>
             <h2>Team Display</h2>
 
+            {errorMessage && (
+                <div style={{ color: '#d32f2f', marginBottom: '15px', padding: '12px', backgroundColor: '#ffebee', borderRadius: '4px' }}>
+                    <strong>⚠️ Error:</strong> {errorMessage}
+                </div>
+            )}
+
             {teams && !errorMessage &&
                 <div className="team-container">
                     <div className="teams-header">
@@ -84,25 +90,31 @@ const DisplayTeams: React.FC<DisplayTeamsProps> = ({ errorMessage, teams, onBack
                             </button>
                         )}
                     </div>
-                    {teams.map((team, index) => (
-                        <div key={index} className="team">
-                            <p><strong>Team {index + 1}:</strong> <span className="avg-rating">Avg Rating: {(team.totalRating / team.players.length).toFixed(2)}</span></p>
-                            <ul>
-                                {team.players.map((player, playerIndex) => (
-                                    <li key={playerIndex}>{playerIndex + 1}. {player.name}</li>
-                                ))}
-                            </ul>
-                        </div>
-                    ))}
+                    <div className='teams-render'>
+                        {teams.map((team, index) => (
+                            <div key={index} className="team">
+                                <p><strong>Team {index + 1}:</strong> <span className="avg-rating">Avg Rating: {(team.totalRating / team.players.length).toFixed(2)}</span></p>
+                                <ul>
+                                    {team.players.map((player, playerIndex) => (
+                                        <li key={playerIndex}>{playerIndex + 1}. {player.name}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ))}
+                        <span 
+                            className="copy-button-float" 
+                            onClick={handleCopy} 
+                            aria-label="Copy teams to clipboard"
+                            title="Copy teams"
+                        >
+                            <FontAwesomeIcon icon={faCopy as IconProp} />
+                        </span>
+                    </div>
                     <p><strong>Not happy with the teams?</strong> Try generating new ones!</p>
                     <div className="button-group">
                         <button className="display-share-btn" onClick={handleShare} aria-label="Share teams">
                             <FontAwesomeIcon icon={faShareFromSquare as IconProp} />
                             {" Share"}
-                        </button>
-                        <button className="display-copy-btn" onClick={handleCopy} aria-label="Copy teams to clipboard">
-                            <FontAwesomeIcon icon={faCopy as IconProp} />
-                            {" Copy"}
                         </button>
                         <button className="display-back-btn" onClick={onBack} aria-label="Go back to confirm selection">
                             Back

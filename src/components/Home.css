@@ -1,76 +1,249 @@
 .home-container {
-  background-color: #f0f0f0; /* Set your background color */
+  background-color: #f0f0f0;
+  padding: 40px 20px;
+  border-radius: 8px;
+  margin: 20px auto;
+  max-width: 800px;
+}
+
+.home-title {
+  text-align: center;
+  color: #008080;
+  font-size: 2.5em;
+  margin-bottom: 15px;
+}
+
+.description {
+  text-align: center;
+  color: #333;
+  font-size: 1.1em;
+  margin-bottom: 40px;
+  line-height: 1.6;
+}
+
+.features-container {
+  background-color: #fff;
   padding: 20px;
   border-radius: 8px;
-  margin: 20px;
+  margin-bottom: 30px;
+  border-left: 4px solid #008080;
 }
 
-.description-section {
-  color: #333; /* Set your text color */
+.features-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  font-size: 1.05em;
 }
 
-.instruction {
-  margin-top: 10px;
+.features-list li {
+  padding: 10px 0;
+  color: #555;
 }
 
-.instruction-list {
-  margin-bottom: 20px;
+.algorithm-section {
+  background-color: #e3f2fd;
+  padding: 30px 20px;
+  border-radius: 8px;
+  margin-bottom: 40px;
 }
 
-.feature-section,
-.how-to-use-section {
-  margin-top: 20px;
+.algorithm-section h3 {
+  text-align: center;
+  color: #008080;
+  margin-bottom: 25px;
+  font-size: 1.3em;
 }
 
-h2,
-h3 {
-  color: #008080; /* Set your heading color */
+.algorithm-diagram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
-ul {
-  list-style-type: disc;
-  margin-left: 20px;
+.diagram-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 
-a {
-  color: #0066cc; /* Set your link color */
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
-.developer-info {
-  font-family: 'Cosmic', sans-serif;
+.bucket,
+.weight,
+.result {
+  background-color: white;
+  padding: 20px 30px;
+  border-radius: 8px;
+  font-size: 1.2em;
   font-weight: bold;
-  font-size: 12px;
-  text-align: right;
-  margin-top: 20px;
-  color: #555; /* Set your text color */
+  text-align: center;
+  min-width: 120px;
+  border: 2px solid #008080;
 }
 
-/* Additional styles for the bottom area */
+.bucket {
+  background-color: #b3e5fc;
+  border-color: #0277bd;
+}
+
+.weight {
+  background-color: #fff59d;
+  border-color: #f57f17;
+}
+
+.result {
+  background-color: #c8e6c9;
+  border-color: #388e3c;
+}
+
+.diagram-label {
+  font-size: 0.85em;
+  color: #666;
+  text-align: center;
+  margin: 0;
+}
+
+.arrow {
+  font-size: 1.8em;
+  color: #008080;
+  font-weight: bold;
+}
+
 .bottom-area {
   margin-top: 40px;
   text-align: center;
 }
 
-.bottom-label {
-  margin-bottom: 10px;
-  font-size: 14px; /* Contracted text size */
-}
-
 .login-button {
-  background-color: #6aa84f; /* Slightly darker green color */
-  color: #fff; /* Text color */
+  background-color: #6aa84f;
+  color: #fff;
   border: none;
   border-radius: 5px;
-  padding: 10px 20px;
+  padding: 14px 40px;
   cursor: pointer;
-  font-family: 'Cosmic', sans-serif; /* Cosmic font */
-  font-size: 16px; /* Button text size */
+  font-size: 16px;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
 }
 
 .login-button:hover {
-  background-color: #55863f; /* Darker shade of green on hover */
+  background-color: #55863f;
+}
+
+@media (max-width: 768px) {
+  .home-container {
+    padding: 20px 15px;
+    margin: 10px auto;
+  }
+
+  .home-title {
+    font-size: 2em;
+  }
+
+  .features-list {
+    grid-template-columns: 1fr;
+  }
+
+  .algorithm-diagram {
+    gap: 12px;
+  }
+
+  .bucket,
+  .weight,
+  .result {
+    min-width: 100px;
+    padding: 15px 20px;
+    font-size: 1em;
+  }
+
+  .arrow {
+    font-size: 1.4em;
+  }
+}
+
+.players-box,
+.process-box,
+.balanced-box {
+  background-color: white;
+  padding: 20px 25px;
+  border-radius: 8px;
+  border: 2px solid #008080;
+  text-align: center;
+  min-width: 140px;
+}
+
+.players-box {
+  background-color: #b3e5fc;
+  border-color: #0277bd;
+}
+
+.player-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.9em;
+  font-weight: 500;
+  color: #0277bd;
+}
+
+.ratings-box {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #0277bd;
+  font-size: 0.85em;
+  color: #0277bd;
+  font-weight: 600;
+}
+
+.process-box {
+  background-color: #fff59d;
+  border-color: #f57f17;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 20px;
+}
+
+.teams-count {
+  font-size: 1.1em;
+  font-weight: bold;
+  color: #f57f17;
+}
+
+.volleyball-emoji {
+  font-size: 1.8em;
+}
+
+.balanced-box {
+  background-color: #c8e6c9;
+  border-color: #388e3c;
+}
+
+.team-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.95em;
+  font-weight: 600;
+  color: #388e3c;
+}
+
+.player-list span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.9em;
+}
+
+.stars {
+  font-size: 0.85em;
+  letter-spacing: 1px;
+  color: #f57f17;
+  font-weight: bold;
 }

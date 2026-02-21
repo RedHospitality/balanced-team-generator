@@ -27,6 +27,8 @@ const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true); // Assuming you have a state for login status
   const [userPlayers, setUserPlayers] = useState<PlayerModel[]>([]);
 
+  const loginEnabled = false; // Feature flag for login functionality
+
   const handleToggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
@@ -48,22 +50,31 @@ const App: React.FC = () => {
           <div className="content">
             <Routes>
               <Route
-                path={PATH.BASE_PATH} element={ <Home />}
-              />
-              <Route
                 path={PATH.HOME_PATH} element={ <Home />}
               />
-              <Route
-                path={PATH.LOGIN_PATH} element={ <LoginPage onLogin={setIsLoggedIn} />}
-              />
+              {loginEnabled && (
+                <>
+                  <Route
+                    path={PATH.BASE_PATH} element={ <Home />}
+                  />
+                  <Route
+                    path={PATH.LOGIN_PATH} element={ <LoginPage onLogin={setIsLoggedIn} />}
+                  />
+                </>
+              )}
               <Route
                 path={PATH.PLAYER_PATH}
-                element={isLoggedIn ? <Players /> : <Navigate to={PATH.LOGIN_PATH} />}
+                element={loginEnabled && !isLoggedIn ? <Navigate to={PATH.LOGIN_PATH} /> : <Players />}
               />
               <Route
                 path={PATH.CREATE_TEAMS_PATH}
-                element={isLoggedIn ? <CreateTeamsWorkflow /> : <Navigate to={PATH.LOGIN_PATH} />}
+                element={loginEnabled && !isLoggedIn ? <Navigate to={PATH.LOGIN_PATH} /> : <CreateTeamsWorkflow />}
               />
+              {!loginEnabled && (
+                <Route
+                  path={PATH.BASE_PATH} element={<Navigate to={PATH.HOME_PATH} />}
+                />
+              )}
             </Routes>
           </div>
         </div>

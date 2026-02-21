@@ -1,48 +1,81 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate hook
-import './Home.css'; // Import your CSS file for styling
+import { useNavigate } from 'react-router-dom';
+import './Home.css';
 import { PATH } from '../constants/path';
 
 const Home: React.FC = () => {
-  const navigate = useNavigate(); // Initialize navigate function
+  const navigate = useNavigate();
 
-  const handleNavigateToLogin = () => {
-    navigate(PATH.LOGIN_PATH); // Navigate to the base path
+  const handleNavigateToCreateTeams = () => {
+    navigate(PATH.CREATE_TEAMS_PATH);
   };
 
   return (
     <div className="home-container">
+      <h1 className="home-title">Balanced Team Generator</h1>
       <p className="description">
-        Welcome to the Balanced Team Generator app! This simple application is designed for creating balanced sports teams, initially tailored for volleyball but adaptable to other sports as well. You can manually enter player data with the format "PlayerName: Rating" (where the rating is a number from 1 to 5 with 0.5 differences), or import data from a Google Spreadsheet in CSV format ("PlayerName, Rating").
+        Create fair, balanced sports teams by distributing player ratings evenly across each team.
       </p>
 
-      <div className="feature-section">
-        <h3>Features:</h3>
-        <ul>
-          <li>Generate balanced teams with customizable parameters.</li>
-          <li>Process and manage player data efficiently.</li>
-          <li>Share generated teams with other applications.</li>
-          <li>Option to import player data from Google Sheets.</li>
+      <div className="features-container">
+        <ul className="features-list">
+          <li>📊 Manual player entry</li>
+          <li>📈 Google Sheets import</li>
+          <li>⚖️ Balanced team distribution</li>
+          <li>🔄 Easy regeneration</li>
         </ul>
       </div>
 
-      <div className="how-to-use-section">
-        <h3>How to Use:</h3>
-        <ul>
-          <li>Navigate to the "Create Teams" page.</li>
-          <li>Click "Enter Data" Popup to insert Manual/Google Spreadsheet data.</li>
-          <li>Click "Process" and you will see all your players.</li>
-          <li>User "Team Count" Scroll and checkbox to select players.</li>
-          <li>Click "Generate Teams" BOOM ready to share.</li>
-        </ul>
+      <div className="algorithm-section">
+        <h3>How It Works</h3>
+        <div className="algorithm-diagram">
+          {/* Input: Players */}
+          <div className="diagram-item">
+            <div className="players-box">
+              <div className="player-list">
+                <span>A <span className="stars">⭐⭐</span></span>
+                <span>B <span className="stars">⭐⭐⭐⭐⭐</span></span>
+                <span>C <span className="stars">⭐⭐⭐</span></span>
+                <span>...</span>
+                <span>N <span className="stars">⭐⭐⭐⭐⭐⭐</span></span>
+              </div>
+            </div>
+            <p className="diagram-label">Players with Ratings</p>
+          </div>
+          
+          {/* Arrow */}
+          <div className="arrow">→</div>
+          
+          {/* Process: Grouping into Teams */}
+          <div className="diagram-item">
+            <div className="process-box">
+              <span className="teams-count">X Teams</span>
+              <span className="volleyball-emoji">🏐</span>
+            </div>
+            <p className="diagram-label">Group into Teams</p>
+          </div>
+          
+          {/* Arrow */}
+          <div className="arrow">→</div>
+          
+          {/* Output: Balanced Teams */}
+          <div className="diagram-item">
+            <div className="balanced-box">
+              <div className="team-list">
+                <span>Team 1</span>
+                <span>Team 2</span>
+                <span>...</span>
+                <span>Team X</span>
+              </div>
+            </div>
+            <p className="diagram-label">Balanced Teams</p>
+          </div>
+        </div>
       </div>
 
-      {/* Separate area for the button */}
       <div className="bottom-area">
-        <p className="bottom-label">Already have an account?</p>
-        {/* Button to navigate to Login/Sign up page */}
-        <button onClick={handleNavigateToLogin} className="login-button">
-          Go to Login/Sign up
+        <button onClick={handleNavigateToCreateTeams} className="login-button">
+          Get Started
         </button>
       </div>
     </div>

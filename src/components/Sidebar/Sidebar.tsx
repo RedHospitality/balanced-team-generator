@@ -11,15 +11,9 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggleSidebar}) => {
-
-  const playerPath = PATH.BASE_PATH + "/player";
-  const createTeamsPath = PATH.BASE_PATH + "/createTeams";
   return (
     <nav className={isOpen ? 'open' : ''}>
       <ul>
-        <li>
-          <Link to={PATH.BASE_PATH} onClick={onToggleSidebar}>Login</Link>
-        </li>
         <li>
           <Link to={PATH.HOME_PATH} onClick={onToggleSidebar}>Home</Link>
         </li>
