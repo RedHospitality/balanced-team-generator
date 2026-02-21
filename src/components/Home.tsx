@@ -44,7 +44,7 @@ const Home: React.FC = () => {
           </div>
           
           {/* Arrow */}
-          <div className="arrow">→</div>
+          <div className="arrow">↓</div>
           
           {/* Process: Grouping into Teams */}
           <div className="diagram-item">
@@ -56,7 +56,7 @@ const Home: React.FC = () => {
           </div>
           
           {/* Arrow */}
-          <div className="arrow">→</div>
+          <div className="arrow">↓</div>
           
           {/* Output: Balanced Teams */}
           <div className="diagram-item">
