@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMinus, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { UserContext } from '../../../../App';
-import { normalizeRating } from '../../../../utils/teamUtils';
+import { normalizeRating, normalizePlayers } from '../../../../utils/teamUtils';
 import { normalizeGoogleSheetsUrl } from '../../../../utils/urlUtils';
 import { storePlayerData, getPlayerData } from '../../../../utils/cookieUtils';
 
@@ -180,15 +180,18 @@ const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersDa
         return;
       }
 
+      // Normalize and deduplicate players, and only store valid entries
+      const sanitizedPlayers = normalizePlayers(processedPlayers);
+
       // Store in cookies
       const playerData: PlayerData = {
-        players: processedPlayers,
+        players: sanitizedPlayers,
         importType,
         importUrl
       };
       storePlayerData(playerData);
 
-      setPlayersData(processedPlayers);
+      setPlayersData(sanitizedPlayers);
       onNext();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred while importing players.';

@@ -40,12 +40,17 @@ const Players = () => {
           <div style={{ textAlign: 'center', marginBottom: '15px', padding: '10px', backgroundColor: '#f0f0f0', borderRadius: '4px' }}>
             <strong>Total Players: {playerData.players.length}</strong>
           </div>
-          <p style={{ marginBottom: '15px', color: '#666' }}>
-            <strong>Import Type:</strong> {playerData.importType}
+          <div style={{ marginBottom: '15px', color: '#666' }}>
+            <div style={{ fontSize: '0.95em' }}><strong>Import:</strong> {playerData.importType}</div>
             {playerData.importUrl && (
-              <span> | <strong>Source:</strong> {playerData.importUrl}</span>
+              <div style={{ fontSize: '0.85em', marginTop: '6px' }}>
+                <strong>Source:</strong>{' '}
+                <a href={playerData.importUrl} target="_blank" rel="noreferrer" style={{ color: '#1565c0' }}>
+                  {playerData.importUrl}
+                </a>
+              </div>
             )}
-          </p>
+          </div>
 
           {playerData.players.map((player, index) => (
             <div key={index} className="player-item">

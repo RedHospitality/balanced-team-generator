@@ -1,6 +1,4 @@
 .players-import-container {
-    width: 100%;
-    max-width: 100%;
     margin: 0 auto;
     padding: 10px;
 }
@@ -61,14 +59,14 @@
 .process-btn {
     background-color: #bfb79e;
     color: rgb(60, 6, 6);
-    padding: 12px 20px;
+    padding: 10px 16px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
-    font-family: monospace;
-    font-weight: 700;
-    min-width: 140px;
+    font-family: inherit;
+    font-weight: 600;
+    min-width: 120px;
     max-width: 200px;
     transition: background-color 0.3s ease;
     display: inline-flex;

@@ -7,6 +7,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Ensure form controls use at least 16px font-size to avoid iOS Safari auto-zoom on focus */
+input,
+select,
+textarea {
+  font-size: 16px;
+}
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;

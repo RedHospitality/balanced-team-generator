@@ -1,8 +1,7 @@
 .team-selection-container {
-    width: 100%;
-    max-width: 100%;
     margin: 0 auto;
     padding: 10px;
+    overflow: visible; /* allow inner content to expand rather than hide */
 }
 
 .team-selection-container h2 {
@@ -38,11 +37,12 @@
 .player-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px;
+    gap: 8px;
+    padding: 6px;
     background-color: #f5f5f5;
     border-radius: 4px;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
 }
 
 .player-item input[type="checkbox"] {
@@ -130,14 +130,6 @@
 }
 
 @media (max-width: 768px) {
-    .player-item {
-        flex-wrap: wrap;
-    }
-    
-    .player-item p {
-        width: 100%;
-    }
-    
     .button-group {
         flex-direction: column;
     }

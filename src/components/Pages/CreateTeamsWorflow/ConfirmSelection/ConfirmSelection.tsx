@@ -116,7 +116,7 @@ const ConfirmSelection: React.FC<ConfirmSelectionProps> = ({ setErrorMessage, se
             <h2>Review Selection</h2>
             
             <div className='temp-message'>
-                <strong>Note:</strong> All changes below are temporary and only used for this team generation. Your imported data remains unchanged.
+                <strong>Note:</strong> You can edit ratings or add guest players here for this run only.
             </div>
 
             {validationErrors.length > 0 && (
@@ -130,7 +130,7 @@ const ConfirmSelection: React.FC<ConfirmSelectionProps> = ({ setErrorMessage, se
                 </div>
             )}
 
-            <h3>Imported Players (Adjust Ratings if needed):</h3>
+            <h3>Imported Players</h3>
             <div style={{ marginBottom: '20px' }}>
                 {editedPlayers.map((player, index) => (
                     <div key={index} className='player-row'>
@@ -145,7 +145,7 @@ const ConfirmSelection: React.FC<ConfirmSelectionProps> = ({ setErrorMessage, se
                 ))}
             </div>
 
-            <h3>Guest Players (Optional - Add Last Minute Players):</h3>
+            <h3>Guest Players</h3>
             <div className='guest-players-section'>
                 {guestPlayers.map((player, index) => (
                     <div key={index} className='guest-row'>
@@ -188,6 +188,10 @@ const ConfirmSelection: React.FC<ConfirmSelectionProps> = ({ setErrorMessage, se
                 <span style={{ marginLeft: '15px' }}>
                     (Teams: {teamCount})
                 </span>
+            </div>
+
+            <div className='temp-note-bottom'>
+                <strong>Note:</strong> These changes do not modify your imported player data.
             </div>
 
             <div className='btn-div'>

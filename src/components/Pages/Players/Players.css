@@ -1,14 +1,14 @@
 .container {
-  background-color: #ebe8d6; /* Light Blue */
-  padding: 20px;
-  border-radius: 10px;
+  background-color: #f7f7f7;
+  padding: 12px;
+  border-radius: 8px;
 }
+
 
 .player-item {
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
-  font-family: 'TechFont', sans-serif; /* Tech font for player data */
+  margin-bottom: 4px;
 }
 
 .player-name {
@@ -16,11 +16,10 @@
 }
 
 .player-name input, .player-name select {
-  padding: 8px;
+  padding: 6px;
   border-radius: 5px;
-  border: 1px solid #3498db; /* Blue */
-  background-color: #eaf6ff; /* Lighter Blue */
-  font-family: 'TechFont', sans-serif; /* Tech font for input fields */
+  border: 1px solid #d0d7de;
+  background-color: #ffffff;
 }
 
 .player-name input:focus, .player-name select:focus {
@@ -112,5 +111,5 @@
 }
 
 .add-players-div{
-  padding-left: 100px;
+  padding-left: 0;
 }
