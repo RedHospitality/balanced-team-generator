@@ -117,12 +117,89 @@ export function assignPlayerToLightestTeam(
 }
 
 /**
+ * Computes team capacities based on number of players and teams.
+ * Distributes players as evenly as possible, with remainder going to first teams.
+ *
+ * @param playerCount Total number of players
+ * @param teamCount Number of teams
+ * @returns Array of capacities (one per team)
+ */
+export function computeTeamCapacities(playerCount: number, teamCount: number): number[] {
+  const baseCapacity = Math.floor(playerCount / teamCount);
+  const remainder = playerCount % teamCount;
+
+  return Array.from({ length: teamCount }, (_, i) => (i < remainder ? baseCapacity + 1 : baseCapacity));
+}
+
+/**
+ * Distributes players across teams using hybrid greedy algorithm with capacity constraints.
+ * - Maintains both totalRating and totalPlayers per team
+ * - Assigns highest-rated available player to the team with smallest total rating (that still has capacity)
+ * - Removes teams from active list once they reach capacity (soft-removal)
+ * - Guarantees all teams have size difference ≤ 1
+ *
+ * @param ratingGroups Sorted array of [rating, players[]] tuples (descending)
+ * @param teamCount Number of teams
+ * @returns Array of teams, each containing PlayerModel objects
+ */
+export function distributePlayersAcrossTeamsWithCapacity(
+  ratingGroups: Array<[number, PlayerModel[]]>,
+  teamCount: number
+): PlayerModel[][] {
+  // Compute capacities: base + remainder distributed
+  const capacities = computeTeamCapacities(
+    ratingGroups.reduce((sum, [_, players]) => sum + players.length, 0),
+    teamCount
+  );
+
+  const teams: PlayerModel[][] = Array.from({ length: teamCount }, () => []);
+  const totalRatings: number[] = Array.from({ length: teamCount }, () => 0);
+  const activeTeams = new Set<number>(Array.from({ length: teamCount }, (_, i) => i));
+
+  // Iterate through each rating group (highest first due to descending sort)
+  ratingGroups.forEach(([rating, players]) => {
+    // Shuffle players within this rating group for variety
+    shuffleArray(players);
+
+    // Assign each player to the lightest active team
+    players.forEach((player) => {
+      if (activeTeams.size === 0) {
+        throw new Error('No active teams available for player assignment');
+      }
+
+      // Find the active team with smallest total rating
+      let lightestTeamIndex = -1;
+      let lightestTotal = Infinity;
+
+      activeTeams.forEach((teamIdx) => {
+        if (totalRatings[teamIdx] < lightestTotal) {
+          lightestTotal = totalRatings[teamIdx];
+          lightestTeamIndex = teamIdx;
+        }
+      });
+
+      // Assign player to lightest active team
+      teams[lightestTeamIndex].push(player);
+      totalRatings[lightestTeamIndex] += player.rating;
+
+      // Soft-remove team if it has reached capacity
+      if (teams[lightestTeamIndex].length === capacities[lightestTeamIndex]) {
+        activeTeams.delete(lightestTeamIndex);
+      }
+    });
+  });
+
+  return teams;
+}
+
+/**
  * Distributes players across teams in descending rating order.
  * For each player group (by rating), shuffles players and assigns each to the lightest team.
  *
  * @param ratingGroups Sorted array of [rating, players[]] tuples (descending)
  * @param teamCount Number of teams
  * @returns Array of teams, each containing PlayerModel objects
+ * @deprecated Use distributePlayersAcrossTeamsWithCapacity instead
  */
 export function distributePlayersAcrossTeams(
   ratingGroups: Array<[number, PlayerModel[]]>,
@@ -146,13 +223,17 @@ export function distributePlayersAcrossTeams(
 }
 
 /**
- * Allocates players to teams using greedy balanced assignment.
+ * Allocates players to teams using hybrid greedy assignment with capacity constraints.
  * Steps:
  * 1. Normalize players (dedupe, trim, validate, round ratings to 1-10)
  * 2. Group by rating (1-10 buckets) in descending order
- * 3. Shuffle within each rating group
- * 4. For each player, assign to the team with lowest total rating
- * 5. Shuffle final team order for presentation
+ * 3. Shuffle within each rating group for randomness
+ * 4. Compute team capacities (base + remainder distributed)
+ * 5. For each player (highest-rated first), assign to the team with lowest total rating among active teams
+ * 6. Soft-remove teams once they reach capacity
+ * 7. Shuffle final team order for presentation
+ *
+ * Guarantees: All teams differ in size by at most 1, rating totals are balanced by greedy assignment.
  *
  * @param players Array of players with name and rating
  * @param teamCount Number of teams to create
@@ -180,8 +261,8 @@ export function allocatePlayersToTeams(
   // Step 2: Group by rating in descending order (highest first)
   const ratingGroups = groupPlayersByRatingDescending(normalizedPlayers);
 
-  // Step 3-4: Distribute across teams (shuffles within groups and assigns to lightest team)
-  const playerTeams = distributePlayersAcrossTeams(ratingGroups, teamCount);
+  // Step 3-6: Distribute across teams with capacity constraints
+  const playerTeams = distributePlayersAcrossTeamsWithCapacity(ratingGroups, teamCount);
 
   // Calculate total ratings for each team
   const teams: TeamModel[] = playerTeams.map((team) => ({
@@ -189,7 +270,7 @@ export function allocatePlayersToTeams(
     totalRating: team.reduce((sum, player) => sum + player.rating, 0),
   }));
 
-  // Step 5: Shuffle final team order for variety (teams are not ranked)
+  // Step 7: Shuffle final team order for variety (teams are not ranked)
   shuffleArray(teams);
 
   return teams;
