@@ -46,6 +46,10 @@ const CreateTeamsWorkflow = () => {
 
     return (
         <div className="create-teams-workflow">
+            <div className="workflow-headline" style={{ marginBottom: '16px', textAlign: 'center' }}>
+                <h2 style={{ margin: '0 0 6px', fontSize: '24px' }}>Build Balanced Teams</h2>
+                <p style={{ margin: 0, color: '#666' }}>Pick from your club roster and create fair matchups fast.</p>
+            </div>
             <div className="tabs">
                 <div className={`tab ${activeStep === 1 ? 'active' : activeStep > 1 ? 'done' : ''}`} onClick={() => setActiveStep(1)}>
                     <FontAwesomeIcon icon={(activeStep === 1 ? faSolidCircle : faCheckCircle) as IconProp} 

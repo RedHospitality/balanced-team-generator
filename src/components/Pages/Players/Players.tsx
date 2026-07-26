@@ -1,67 +1,106 @@
 import React, { useState, useEffect, useContext } from 'react';
 import './Players.css';
 import { UserContext } from '../../../App';
-import { getPlayerData, PlayerData } from '../../../utils/cookieUtils';
 import { useNavigate } from 'react-router-dom';
 import { PATH } from '../../../constants/path';
+import { getUserPlayers, PlayerData } from '../../../utils/authStorageUtils';
 
 const Players = () => {
   const [playerData, setPlayerData] = useState<PlayerData | null>(null);
-  const { setUserPlayers } = useContext(UserContext);
+  const { setUserPlayers, currentUserId } = useContext(UserContext);
   const navigate = useNavigate();
 
+  const getSourceIcon = (url: string) => {
+    if (!url) return null;
+    if (url.includes('docs.google.com')) {
+      return { icon: '📊', name: 'Google Sheets' };
+    } else if (url.includes('onedrive') || url.includes('sharepoint') || url.includes('.xlsx')) {
+      return { icon: '📑', name: 'Microsoft Excel' };
+    }
+    return { icon: '🔗', name: 'External Link' };
+  };
+
   useEffect(() => {
-    const data = getPlayerData();
+    if (!currentUserId) {
+      return;
+    }
+
+    const data = getUserPlayers(currentUserId);
     if (data) {
       setPlayerData(data);
       setUserPlayers(data.players);
+    } else {
+      setPlayerData(null);
+      setUserPlayers([]);
     }
-  }, [setUserPlayers]);
+  }, [currentUserId, setUserPlayers]);
 
   return (
-    <div>
-      <h2>Players Page</h2>
+    <div className="players-page">
+      <div className="players-header">
+        <h1>Club Roster</h1>
+        <p className="players-subtitle">A growing overview of your players, ratings, and strengths.</p>
+      </div>
 
       {!playerData ? (
-        <div style={{ textAlign: 'center', padding: '50px' }}>
+        <div className="empty-state">
+          <div className="empty-state-icon">📋</div>
           <h3>No Players Imported</h3>
-          <p>You haven't imported any players yet. Go to Create Teams to import player data.</p>
+          <p>You haven't imported any players yet. Add them here and then jump into the team builder when you're ready.</p>
           <button 
-            className="edit-players-button" 
+            className="primary-button" 
             onClick={() => navigate(PATH.CREATE_TEAMS_PATH)}
-            style={{ marginTop: '20px' }}
           >
-            Go to Create Teams
+            Import Players
           </button>
         </div>
       ) : (
-        <div className="container">
-          <h3>Player List</h3>
-          <div style={{ textAlign: 'center', marginBottom: '15px', padding: '10px', backgroundColor: '#f0f0f0', borderRadius: '4px' }}>
-            <strong>Total Players: {playerData.players.length}</strong>
-          </div>
-          <div style={{ marginBottom: '15px', color: '#666' }}>
-            <div style={{ fontSize: '0.95em' }}><strong>Import:</strong> {playerData.importType}</div>
-            {playerData.importUrl && (
-              <div style={{ fontSize: '0.85em', marginTop: '6px' }}>
-                <strong>Source:</strong>{' '}
-                <a href={playerData.importUrl} target="_blank" rel="noreferrer" style={{ color: '#1565c0' }}>
-                  {playerData.importUrl}
-                </a>
-              </div>
-            )}
-          </div>
-
-          {playerData.players.map((player, index) => (
-            <div key={index} className="player-item">
-              <div className="player-name">
-                {player.name}
-              </div>
-              <div className="player-rating">
-                {player.rating}
+        <div className="players-container">
+          <div className="import-info">
+            <div className="info-header">
+              <span className="info-label">Import Details</span>
+              <span className="player-count-badge">{playerData.players.length}</span>
+            </div>
+            <div className="info-content">
+              <div className="info-row">
+                <span className="info-key">Type:</span>
+                <span className="info-value">{playerData.importType}</span>
+                {playerData.importUrl && getSourceIcon(playerData.importUrl) && (
+                  <>
+                    <span className="info-separator">•</span>
+                    <span className="info-key">Source:</span>
+                    <a 
+                      href={playerData.importUrl} 
+                      target="_blank" 
+                      rel="noreferrer" 
+                      className="source-icon-link"
+                      title={getSourceIcon(playerData.importUrl)?.name}
+                    >
+                      {getSourceIcon(playerData.importUrl)?.icon}
+                    </a>
+                  </>
+                )}
               </div>
             </div>
-          ))}
+          </div>
+
+          <div className="players-list-section">
+            <h2 className="list-title">Player List</h2>
+            <div className="players-list">
+              {playerData.players.map((player, index) => (
+                <div key={index} className="player-card">
+                  <div className="player-info">
+                    <div className="player-name">{player.name}</div>
+                    <div className="player-attributes">
+                      {player.attributes?.net && <span className="attribute-chip">Net</span>}
+                      {player.attributes?.shooter && <span className="attribute-chip">Shooter</span>}
+                    </div>
+                  </div>
+                  <div className="player-rating-badge">{player.rating}</div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </div>

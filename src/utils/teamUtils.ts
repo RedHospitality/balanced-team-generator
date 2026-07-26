@@ -31,7 +31,11 @@ export function normalizePlayers(players: PlayerModel[]): PlayerModel[] {
     if (normalizedName && !isNaN(rating)) {
       // Use lowercase key for case-insensitive dedup
       const key = normalizedName.toLowerCase();
-      playerMap.set(key, { name: normalizedName, rating: normalizeRating(rating) });
+      playerMap.set(key, {
+        ...player,
+        name: normalizedName,
+        rating: normalizeRating(rating),
+      });
     }
   });
 

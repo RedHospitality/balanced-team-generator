@@ -2,64 +2,98 @@ import React, { useState } from 'react';
 import './LoginPage.css';
 import { useNavigate } from 'react-router-dom';
 import { PATH } from '../../../constants/path';
+import { authenticateUser, createUserAccount, saveActiveUser } from '../../../utils/authStorageUtils';
 
-// Define the type for the onLogin prop
 interface LoginPageProps {
-  onLogin: (isLoggedIn: boolean) => void;
+  onLogin: (userId: string | null) => void;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
-    const navigate = useNavigate(); // Initialize navigate function
+  const navigate = useNavigate();
 
-    const [loginMode, setLoginMode] = useState(true);
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
+  const [loginMode, setLoginMode] = useState(true);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        if (loginMode) {
-            // Handle login
-            console.log('Logging in with:', email, password);
-            if(email === 'bappi@btg.com' && password === 'Btg123'){
-                // Assuming login is successful
-                onLogin(true);
-                navigate(PATH.HOME_PATH);
-            }
-        } else {
-            // Handle signup
-            console.log('Signing up with:', firstName, lastName, email, password);
-            // Assuming signup is successful
-            onLogin(false);
-        }
-    };
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setErrorMessage(null);
 
-    const toggleMode = () => {
-        setLoginMode(!loginMode);
-    };
+    if (loginMode) {
+      const user = authenticateUser(username, password);
+      if (!user) {
+        setErrorMessage('That username/password combination was not found. Try signing up first.');
+        return;
+      }
 
-    return (
-        <div className="login-page">
-            <h2>{loginMode ? 'Login' : 'Sign Up'}</h2>
-            <form onSubmit={handleSubmit}>
-                {!loginMode && (
-                    <div className="form-row">
-                    <input type="text" placeholder="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
-                    <input type="text" placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
-                </div>
-                )}
-                <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} minLength={6} maxLength={15} pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,15}$" required />
-                {!loginMode && (
-                    <input type="password" placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
-                )}
-                <button type="submit">{loginMode ? 'Login' : 'Sign Up'}</button>
-            </form>
-            <p>{loginMode ? 'Don\'t have an account? ' : 'Already have an account? '}<span onClick={toggleMode}>{loginMode ? 'Sign up' : 'Login'}</span></p>
-        </div>
-    );
+      saveActiveUser(user.id);
+      onLogin(user.id);
+      navigate(PATH.HOME_PATH);
+      return;
+    }
+
+    if (!password || password.length < 6) {
+      setErrorMessage('Password must be at least 6 characters long.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setErrorMessage('Passwords do not match.');
+      return;
+    }
+
+    try {
+      const newUser = createUserAccount({
+        firstName,
+        lastName,
+        username: email,
+        email,
+        password,
+      });
+
+      saveActiveUser(newUser.id);
+      onLogin(newUser.id);
+      navigate(PATH.HOME_PATH);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Unable to create an account.');
+    }
+  };
+
+  const toggleMode = () => {
+    setLoginMode(!loginMode);
+    setErrorMessage(null);
+  };
+
+  return (
+    <div className="login-page">
+      <h2>{loginMode ? 'Login' : 'Sign Up'}</h2>
+      <form onSubmit={handleSubmit}>
+        {!loginMode && (
+          <div className="form-row">
+            <input type="text" placeholder="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
+            <input type="text" placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
+          </div>
+        )}
+        {loginMode ? (
+          <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
+        ) : (
+          <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        )}
+        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        {!loginMode && (
+          <input type="password" placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+        )}
+        {errorMessage && <p className="error-message">{errorMessage}</p>}
+        <button type="submit">{loginMode ? 'Login' : 'Sign Up'}</button>
+      </form>
+      <p>{loginMode ? 'Don\'t have an account? ' : 'Already have an account? '}<span onClick={toggleMode}>{loginMode ? 'Sign up' : 'Login'}</span></p>
+    </div>
+  );
 };
 
 export default LoginPage;

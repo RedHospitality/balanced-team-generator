@@ -37,4 +37,22 @@ nav {
     color: #61dafb;
     background-color: #555; /* Change hover background color */
   }
+
+  .sidebar-logout {
+    width: 100%;
+    text-align: left;
+    border: none;
+    background: transparent;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .sidebar-logout:hover {
+    color: #61dafb;
+    background-color: #555;
+  }
   

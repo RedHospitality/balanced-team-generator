@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import './SelectPlayers.css';
 import { PlayerModel } from '../Models/CreateTeamsModels';
-import { getPlayerData } from '../../../../utils/cookieUtils';
+import { UserContext } from '../../../../App';
+import { getUserPlayers } from '../../../../utils/authStorageUtils';
 
 interface SelectPlayersProps {
     playersData: PlayerModel[],
@@ -17,6 +18,7 @@ interface SelectPlayersProps {
 
 const SelectPlayers: React.FC<SelectPlayersProps> = ({ playersData, errorMessage, setErrorMessage, selectedPlayers,
     setSelectedPlayers, teamCount, setTeamCount, onBack, onNext }) => {
+    const { currentUserId } = useContext(UserContext);
     const initSelectAll = selectedPlayers ? selectedPlayers.length === playersData.length ? 'Yes' : 'Some' : 'No';
     const [selectAll, setSelectAll] = useState<string>(initSelectAll);
 
@@ -80,12 +82,12 @@ const SelectPlayers: React.FC<SelectPlayersProps> = ({ playersData, errorMessage
         <div className='team-selection-container'>
             <h2>Team Selection</h2>
             {(() => {
-                const cookieData = getPlayerData();
-                return cookieData ? (
+                const storedData = currentUserId ? getUserPlayers(currentUserId) : null;
+                return storedData ? (
                     <div style={{ textAlign: 'center', marginBottom: '15px', padding: '10px', backgroundColor: '#f0f0f0', borderRadius: '4px' }}>
-                        <strong>Total Players Imported: {cookieData.players.length}</strong>
+                        <strong>Total Players Imported: {storedData.players.length}</strong>
                         <span style={{ marginLeft: '10px', fontSize: '0.9em', color: '#666' }}>
-                            (Import Type: {cookieData.importType})
+                            (Import Type: {storedData.importType})
                         </span>
                     </div>
                 ) : null;

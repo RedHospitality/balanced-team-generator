@@ -1,53 +1,66 @@
 .login-page {
-    max-width: 400px;
-    margin: 0 auto;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: white; /* Background color white */
+    max-width: 440px;
+    margin: 24px auto;
+    padding: 24px;
+    border: 1px solid #d6dbe1;
+    border-radius: 12px;
+    background-color: #ffffff;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
 }
 
 .login-page h2 {
     text-align: center;
-    color: light-red; /* Light-red color for heading */
+    color: #1f2937;
+    margin-bottom: 16px;
 }
 
 .login-page form {
     display: flex;
     flex-direction: column;
+    gap: 10px;
 }
 
 .login-page input {
-    margin-bottom: 10px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    margin-bottom: 0;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
 }
 
 .login-page button {
     padding: 10px;
-    background-color: neon-green; /* Neon green color for button */
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
+    font-weight: 600;
 }
 
 .login-page p {
-    margin-top: 10px;
+    margin-top: 12px;
     text-align: center;
+    color: #475569;
 }
 
 .login-page p span {
-    color: blue;
+    color: #2563eb;
     cursor: pointer;
+    font-weight: 600;
+}
+
+.error-message {
+    color: #b91c1c;
+    font-size: 0.95rem;
+    margin: 0;
 }
 
 .form-row {
     display: flex;
-    justify-content: space-between; /* Align items evenly on the row */
+    justify-content: space-between;
+    gap: 10px;
 }
 
 .form-row input {
-    flex: 1; /* Take up remaining space */
+    flex: 1;
 }

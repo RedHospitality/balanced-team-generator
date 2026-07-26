@@ -1,13 +1,13 @@
 import React, { useContext, useState } from 'react';
 import './PlayersImport.css';
-import { PlayerModel, PlayerData } from '../Models/CreateTeamsModels';
+import { PlayerModel } from '../Models/CreateTeamsModels';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMinus, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { UserContext } from '../../../../App';
 import { normalizeRating, normalizePlayers } from '../../../../utils/teamUtils';
 import { normalizeGoogleSheetsUrl } from '../../../../utils/urlUtils';
-import { storePlayerData, getPlayerData } from '../../../../utils/cookieUtils';
+import { getUserPlayers, saveUserPlayers } from '../../../../utils/authStorageUtils';
 
 interface PlayersImportProps {
   playersData: PlayerModel[],
@@ -22,7 +22,7 @@ const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersDa
   const [spreadsheetType, setSpreadsheetType] = useState<'google' | 'microsoft'>('google');
   const [dynamicPlayers, setDynamicPlayers] = useState<PlayerModel[]>([{ name: '', rating: 1 }]);
   const [importError, setImportError] = useState<string | undefined>(undefined);
-  const userPlayers = useContext(UserContext).userPlayers;
+  const { userPlayers, currentUserId } = useContext(UserContext);
 
   const fetchDataFromUrl = async (url: string, type: 'google' | 'microsoft'): Promise<string> => {
     let normalizedUrl: string | null = null;
@@ -132,18 +132,23 @@ const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersDa
   }
 
   /*TODO: Remove, just populating dummy data for now. */
+  React.useEffect(() => {
+    if (currentUserId && getUserPlayers(currentUserId)) {
+      setDataInputType('user');
+    }
+  }, [currentUserId]);
+
   React.useEffect(()=> {
-    if(dataInputType === 'user'){
-      const cookieData = getPlayerData();
-      if (cookieData) {
-        setPlayersData(cookieData.players);
+    if(dataInputType === 'user' && currentUserId) {
+      const storedData = getUserPlayers(currentUserId);
+      if (storedData) {
+        setPlayersData(storedData.players);
       } else {
-        // If no cookie data, reset to empty and maybe show error
         setPlayersData([]);
         setImportError('No saved player data found. Please import players first.');
       }
     }
-  }, [dataInputType, setPlayersData]);
+  }, [currentUserId, dataInputType, setPlayersData]);
 
   const handleProcessData = async () => {
     try {
@@ -161,17 +166,21 @@ const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersDa
         processedPlayers = processDataToDisplay(manualData, ':');
         importType = 'Manual';
       } else if (dataInputType === 'user') {
-        const cookieData = getPlayerData();
-        if (cookieData) {
-          processedPlayers = cookieData.players;
-          importType = cookieData.importType;
-          importUrl = cookieData.importUrl;
+        if (!currentUserId) {
+          throw new Error('Please sign in before using saved players.');
+        }
+
+        const storedData = getUserPlayers(currentUserId);
+        if (storedData) {
+          processedPlayers = storedData.players;
+          importType = storedData.importType;
+          importUrl = storedData.importUrl;
         } else {
           throw new Error('No saved player data found. Please import players first.');
         }
       } else {
-        processedPlayers = userPlayers;
-        importType = 'Manual'; // Default for user players
+        processedPlayers = dynamicPlayers.filter((player) => player.name.trim().length > 0);
+        importType = 'Dynamic Insert';
       }
 
       // Validate minimum player count
@@ -183,13 +192,15 @@ const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersDa
       // Normalize and deduplicate players, and only store valid entries
       const sanitizedPlayers = normalizePlayers(processedPlayers);
 
-      // Store in cookies
-      const playerData: PlayerData = {
+      const playerData = {
         players: sanitizedPlayers,
         importType,
         importUrl
       };
-      storePlayerData(playerData);
+
+      if (currentUserId) {
+        saveUserPlayers(currentUserId, playerData);
+      }
 
       setPlayersData(sanitizedPlayers);
       onNext();
@@ -208,11 +219,11 @@ const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersDa
       return !manualData;
     }
     else if (dataInputType === 'dynamic insert') {
-      const allPlayers = [...dynamicPlayers.filter(player => player.name && player.rating)];
+      const allPlayers = dynamicPlayers.filter((player) => player.name.trim().length > 0);
       return allPlayers.length < 2;
     }
     else if (dataInputType === 'user') {
-      return !getPlayerData();
+      return !currentUserId || !getUserPlayers(currentUserId);
     }
     return undefined;
   }
@@ -271,7 +282,7 @@ const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersDa
           >
             <option value="manual">Manual Input</option>
             <option value="spreadsheet">Spreadsheet URL</option>
-            {getPlayerData() && <option value="user">Use My Players</option>}
+            {currentUserId && getUserPlayers(currentUserId) && <option value="user">Use My Players</option>}
             <option value="dynamic insert">Dynamic Insert</option>
           </select>
         </div>

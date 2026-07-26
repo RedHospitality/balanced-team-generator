@@ -1,6 +1,12 @@
+export interface PlayerAttributes {
+    net?: boolean;
+    shooter?: boolean;
+}
+
 export interface PlayerModel {
     name: string;
     rating: number;
+    attributes?: PlayerAttributes;
 }
 
 export interface TeamModel {
