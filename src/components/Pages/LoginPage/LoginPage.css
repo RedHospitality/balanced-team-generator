@@ -1,35 +1,55 @@
 .login-page {
-    max-width: 440px;
-    margin: 24px auto;
+    max-width: 460px;
+    margin: 28px auto;
     padding: 24px;
-    border: 1px solid #d6dbe1;
-    border-radius: 12px;
-    background-color: #ffffff;
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background-color: var(--surface);
+    box-shadow: var(--shadow);
+}
+
+.login-brand h1 {
+    margin: 0 0 6px;
+    font-size: 1.55rem;
+    color: var(--text);
+}
+
+.login-brand p {
+    margin: 0 0 16px;
+    color: var(--muted);
+    text-align: left;
 }
 
 .login-page h2 {
-    text-align: center;
-    color: #1f2937;
-    margin-bottom: 16px;
+    text-align: left;
+    color: var(--text);
+    margin-bottom: 14px;
+    font-size: 1.1rem;
 }
 
 .login-page form {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
+}
+
+.field-label {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: 4px;
 }
 
 .login-page input {
     margin-bottom: 0;
     padding: 10px 12px;
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--border);
     border-radius: 8px;
+    background: #fcfefe;
 }
 
 .login-page button {
     padding: 10px;
-    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
     color: white;
     border: none;
     border-radius: 8px;
@@ -39,28 +59,63 @@
 
 .login-page p {
     margin-top: 12px;
-    text-align: center;
-    color: #475569;
+    text-align: left;
+    color: var(--muted);
 }
 
-.login-page p span {
-    color: #2563eb;
+.mode-toggle {
+    border: 0;
+    background: transparent;
+    color: var(--accent-2);
+    font-weight: 700;
+    padding: 0;
     cursor: pointer;
-    font-weight: 600;
+}
+
+.demo-accounts {
+    margin-top: 14px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #f7fbfb;
+}
+
+.demo-accounts h3 {
+    margin: 0 0 8px;
+    font-size: 0.95rem;
+    color: var(--text);
+}
+
+.demo-accounts ul {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--muted);
+}
+
+.demo-accounts li {
+    margin: 4px 0;
+    font-size: 0.9rem;
 }
 
 .error-message {
-    color: #b91c1c;
+    color: var(--danger);
     font-size: 0.95rem;
     margin: 0;
 }
 
 .form-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
 }
 
 .form-row input {
     flex: 1;
+}
+
+@media (max-width: 600px) {
+    .login-page {
+        margin: 14px auto;
+        padding: 18px;
+    }
 }

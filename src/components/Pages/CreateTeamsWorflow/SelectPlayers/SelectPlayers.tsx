@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import './SelectPlayers.css';
 import { PlayerModel } from '../Models/CreateTeamsModels';
 import { UserContext } from '../../../../App';
-import { getUserPlayers } from '../../../../utils/authStorageUtils';
+import { getUserPlayers, PlayerData } from '../../../../utils/authStorageUtils';
 
 interface SelectPlayersProps {
     playersData: PlayerModel[],
@@ -21,6 +21,7 @@ const SelectPlayers: React.FC<SelectPlayersProps> = ({ playersData, errorMessage
     const { currentUserId } = useContext(UserContext);
     const initSelectAll = selectedPlayers ? selectedPlayers.length === playersData.length ? 'Yes' : 'Some' : 'No';
     const [selectAll, setSelectAll] = useState<string>(initSelectAll);
+    const [storedData, setStoredData] = useState<PlayerData | null>(null);
 
     // Function to handle checkbox change
     const handleCheckboxChange = (player: PlayerModel) => {
@@ -60,6 +61,20 @@ const SelectPlayers: React.FC<SelectPlayersProps> = ({ playersData, errorMessage
         }
     }, [selectAll, playersData, setSelectedPlayers]);
 
+    useEffect(() => {
+        const loadStoredData = async () => {
+            if (!currentUserId) {
+                setStoredData(null);
+                return;
+            }
+
+            const data = await getUserPlayers(currentUserId);
+            setStoredData(data);
+        };
+
+        void loadStoredData();
+    }, [currentUserId]);
+
     // Function to handle team count change
     const handleTeamCountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const count = parseInt(event.target.value, 10);
@@ -81,17 +96,14 @@ const SelectPlayers: React.FC<SelectPlayersProps> = ({ playersData, errorMessage
     return (
         <div className='team-selection-container'>
             <h2>Team Selection</h2>
-            {(() => {
-                const storedData = currentUserId ? getUserPlayers(currentUserId) : null;
-                return storedData ? (
-                    <div style={{ textAlign: 'center', marginBottom: '15px', padding: '10px', backgroundColor: '#f0f0f0', borderRadius: '4px' }}>
-                        <strong>Total Players Imported: {storedData.players.length}</strong>
-                        <span style={{ marginLeft: '10px', fontSize: '0.9em', color: '#666' }}>
-                            (Import Type: {storedData.importType})
-                        </span>
-                    </div>
-                ) : null;
-            })()}
+            {storedData ? (
+                <div style={{ textAlign: 'center', marginBottom: '15px', padding: '10px', backgroundColor: '#f0f0f0', borderRadius: '4px' }}>
+                    <strong>Total Players Imported: {storedData.players.length}</strong>
+                    <span style={{ marginLeft: '10px', fontSize: '0.9em', color: '#666' }}>
+                        (Import Type: {storedData.importType})
+                    </span>
+                </div>
+            ) : null}
             <div className="sub-container">
                 <h3>Player List</h3>
                 <form onSubmit={handleConfirmSelection} className="form">

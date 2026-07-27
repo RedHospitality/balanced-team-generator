@@ -1,32 +1,33 @@
 .home-container {
-  background-color: #f0f0f0;
+  background-color: var(--surface);
   padding: 40px 20px;
-  border-radius: 8px;
+  border-radius: 14px;
   margin: 20px auto;
   max-width: 800px;
+  border: 1px solid var(--border);
 }
 
 .home-title {
-  text-align: center;
-  color: #008080;
-  font-size: 2.5em;
+  text-align: left;
+  color: var(--text);
+  font-size: 2em;
   margin-bottom: 15px;
 }
 
 .description {
-  text-align: center;
-  color: #333;
+  text-align: left;
+  color: var(--muted);
   font-size: 1.1em;
-  margin-bottom: 40px;
+  margin-bottom: 22px;
   line-height: 1.6;
 }
 
 .features-container {
-  background-color: #fff;
+  background-color: var(--surface-2);
   padding: 20px;
   border-radius: 8px;
   margin-bottom: 30px;
-  border-left: 4px solid #008080;
+  border: 1px solid var(--border);
 }
 
 .features-list {
@@ -41,7 +42,7 @@
 
 .features-list li {
   padding: 10px 0;
-  color: #555;
+  color: #274646;
 }
 
 .algorithm-section {
@@ -120,7 +121,7 @@
 }
 
 .login-button {
-  background-color: #6aa84f;
+  background-color: var(--accent);
   color: #fff;
   border: none;
   border-radius: 5px;
@@ -132,7 +133,7 @@
 }
 
 .login-button:hover {
-  background-color: #55863f;
+  background-color: var(--accent-2);
 }
 
 @media (max-width: 768px) {

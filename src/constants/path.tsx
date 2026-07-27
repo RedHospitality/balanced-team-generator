@@ -1,5 +1,5 @@
 export const PATH = {
-    BASE_PATH: '/balanced-team-generator',
+    BASE_PATH: '/',
     HOME_PATH: '/about',
     PLAYER_PATH: '/players',
     CREATE_TEAMS_PATH: '/team-builder',

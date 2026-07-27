@@ -14,62 +14,41 @@ beforeEach(() => {
 });
 
 describe('authStorageUtils', () => {
-  it('creates a user account and authenticates it', () => {
-    const account = createUserAccount({
-      firstName: 'Ada',
-      lastName: 'Lovelace',
+  it('authenticates a demo account', async () => {
+    await expect(authenticateUser('ada@example.com', 'Password1')).resolves.toMatchObject({
       username: 'ada@example.com',
-      email: 'ada@example.com',
-      password: 'Password1',
-    });
-
-    expect(account.email).toBe('ada@example.com');
-    expect(authenticateUser('ada@example.com', 'Password1')).toMatchObject({
-      email: 'ada@example.com',
     });
   });
 
-  it('persists the active user and their players data', () => {
-    const account = createUserAccount({
-      firstName: 'Grace',
-      lastName: 'Hopper',
-      username: 'grace@example.com',
-      email: 'grace@example.com',
-      password: 'Password2',
-    });
+  it('rejects sign up in demo mode', async () => {
+    await expect(createUserAccount()).rejects.toThrow('Sign up is temporarily disabled');
+  });
+
+  it('persists the active user and their players data', async () => {
+    const account = await authenticateUser('grace@example.com', 'Password2');
+    expect(account).not.toBeNull();
+    if (!account) {
+      return;
+    }
 
     saveActiveUser(account.id);
-    saveUserPlayers(account.id, {
+    await saveUserPlayers(account.id, {
       players: [{ name: 'Grace', rating: 9 }],
       importType: 'Manual',
     });
 
-    expect(getActiveUser()?.id).toBe(account.id);
-    expect(getUserPlayers(account.id)?.players).toHaveLength(1);
+    await expect(getActiveUser()).resolves.toMatchObject({ id: account.id });
+    await expect(getUserPlayers(account.id)).resolves.toMatchObject({ players: [{ name: 'Grace', rating: 9 }] });
 
     clearActiveUser();
-    expect(getActiveUser()).toBeNull();
+    await expect(getActiveUser()).resolves.toBeNull();
   });
 
-  it('writes a profile index entry for new sign-ups', () => {
-    const account = createUserAccount({
-      firstName: 'Margaret',
-      lastName: 'Hamilton',
-      username: 'margaret@example.com',
-      email: 'margaret@example.com',
-      password: 'Password3',
-    });
-
-    const storedIndex = window.localStorage.getItem('balancedTeamGenerator.profileIndex');
-    expect(storedIndex).toContain(account.id);
-    expect(storedIndex).toContain('margaret@example.com');
-  });
-
-  it('seed the demo temp profile with the mock players', () => {
-    const tempUser = authenticateUser('temp', 'temp');
+  it('seeds the demo temp profile with the mock players', async () => {
+    const tempUser = await authenticateUser('temp', 'temp');
 
     expect(tempUser?.id).toBe('temp');
-    expect(tempUser?.email).toBe('temp');
-    expect(getUserPlayers('temp')?.players).toEqual(PlayerList);
+    expect(tempUser?.username).toBe('temp');
+    await expect(getUserPlayers('temp')).resolves.toMatchObject({ players: PlayerList });
   });
 });

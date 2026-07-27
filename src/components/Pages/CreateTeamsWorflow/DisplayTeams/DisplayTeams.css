@@ -186,9 +186,9 @@
     position: absolute;
     bottom: 5px;
     right: 5px;
-    background-color: transparent;
+    background-color: #ffffff;
     color: black;
-    border: 1px dashed black;
+    border: 1px dashed #334;
     border-radius: 12%;
     width: 26px;
     height: 26px;
@@ -201,13 +201,19 @@
 }
 
 .copy-button-float:hover {
-    background-color: #f5f5f5;
+    background-color: #f1f6f5;
     transform: scale(1.05);
 }
 
 .copy-button-float:active {
     transform: scale(0.92);
     background-color: #efefef;
+}
+
+.copied-message {
+    margin: 8px 0 0;
+    color: #1f7f69;
+    font-size: 0.9rem;
 }
 
 /* Add a visible dashed border to the whole teams-render when content is copied or active */

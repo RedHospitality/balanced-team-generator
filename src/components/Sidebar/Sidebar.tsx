@@ -8,23 +8,24 @@ import { clearActiveUser } from '../../utils/authStorageUtils';
 
 interface SidebarProps {
   isOpen: boolean,
-  onToggleSidebar: () => void
+  onToggleSidebar: () => void,
+  onLogout: () => void,
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggleSidebar}) => {
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggleSidebar, onLogout}) => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
     clearActiveUser();
-    onToggleSidebar();
+    onLogout();
     navigate(PATH.LOGIN_PATH);
   };
 
   return (
-    <nav className={isOpen ? 'open' : ''}>
+    <nav className={isOpen ? 'open' : ''} aria-label="Primary navigation">
       <ul>
         <li>
-          <Link to={PATH.PLAYER_PATH} onClick={onToggleSidebar}>Players</Link>
+          <Link to={PATH.PLAYER_PATH} onClick={onToggleSidebar}>Dashboard</Link>
         </li>
         <li>
           <Link to={PATH.CREATE_TEAMS_PATH} onClick={onToggleSidebar}>Team Builder</Link>

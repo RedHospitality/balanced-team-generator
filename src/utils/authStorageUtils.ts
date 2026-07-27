@@ -1,7 +1,5 @@
 import { PlayerModel } from '../components/Pages/CreateTeamsWorflow/Models/CreateTeamsModels';
 import { PlayerList } from '../mocks/PlayerMock';
-import profileIndex from '../profiles/index.json';
-import tempProfile from '../profiles/temp.json';
 
 export interface PlayerData {
   players: PlayerModel[];
@@ -14,297 +12,109 @@ export interface StoredUserAccount {
   firstName: string;
   lastName: string;
   username: string;
-  email: string;
-  password: string;
+  email?: string;
   dataFile: string;
   createdAt: string;
 }
 
-interface UserStoreState {
-  users: StoredUserAccount[];
-  files: Record<string, PlayerData>;
-}
-
-interface RepoProfileEntry {
-  username: string;
-  password: string;
-  profileData: string;
-}
-
-interface RepoProfileIndex {
-  [userId: string]: RepoProfileEntry;
-}
-
-const USER_STORE_KEY = 'balancedTeamGenerator.userStore';
 const ACTIVE_USER_KEY = 'balancedTeamGenerator.activeUser';
-const TEMP_USER_ID = 'temp';
-const TEMP_USER_EMAIL = 'temp';
-const TEMP_USER_PASSWORD = 'temp';
-const PROFILE_INDEX_PATH = 'src/profiles/index.json';
-const PROFILE_INDEX_STORE_KEY = 'balancedTeamGenerator.profileIndex';
-const PROFILE_DATA_STORE_PREFIX = 'balancedTeamGenerator.profile:';
+const PLAYER_DATA_PREFIX = 'balancedTeamGenerator.players:';
 
-let repoProfileIndex: RepoProfileIndex = (process.env.NODE_ENV === 'test' ? {} : profileIndex) as RepoProfileIndex;
-
-function isNodeRuntime() {
-  return typeof window === 'undefined' && typeof process !== 'undefined' && Boolean(process.versions?.node);
+interface MockUserAccount extends StoredUserAccount {
+  password: string;
 }
 
-function loadNodeFsModule() {
-  if (!isNodeRuntime()) {
-    return null;
-  }
-
-  try {
-    // eslint-disable-next-line no-new-func
-    return Function('return require')()('fs');
-  } catch (error) {
-    console.error('Unable to load fs module', error);
-    return null;
-  }
-}
-
-function buildProfileIndexFromRepo(): RepoProfileIndex {
-  if (typeof window !== 'undefined') {
-    const storedIndex = window.localStorage.getItem(PROFILE_INDEX_STORE_KEY);
-    if (storedIndex) {
-      try {
-        return JSON.parse(storedIndex) as RepoProfileIndex;
-      } catch (error) {
-        console.error('Unable to parse stored profile index', error);
-      }
-    }
-  }
-
-  return repoProfileIndex;
-}
-
-function writeProfileIndexToRepo(index: RepoProfileIndex) {
-  repoProfileIndex = index;
-
-  if (typeof window !== 'undefined') {
-    window.localStorage.setItem(PROFILE_INDEX_STORE_KEY, JSON.stringify(index));
-    return;
-  }
-
-  try {
-    const fs = loadNodeFsModule();
-    if (fs) {
-      fs.writeFileSync(PROFILE_INDEX_PATH, JSON.stringify(index, null, 2));
-    }
-  } catch (error) {
-    console.error('Unable to write profile index file', error);
-  }
-}
-
-function createProfileFile(userId: string, username: string, password: string) {
-  const profilePath = `src/profiles/${userId}.json`;
-  const profileData = {
-    username,
-    password,
-    profileData: `/profiles/${userId}.json`,
-    sports: {},
-  };
-
-  if (typeof window !== 'undefined') {
-    window.localStorage.setItem(`${PROFILE_DATA_STORE_PREFIX}${userId}`, JSON.stringify(profileData));
-    return;
-  }
-
-  try {
-    const fs = loadNodeFsModule();
-    if (fs) {
-      fs.writeFileSync(profilePath, JSON.stringify(profileData, null, 2));
-    }
-  } catch (error) {
-    console.error('Unable to write profile file', error);
-  }
-}
-
-function parseProfilePlayers(profile: typeof tempProfile): PlayerModel[] {
-  const volleyball = profile?.sports?.Volleyball;
-
-  if (volleyball && typeof volleyball === 'object') {
-    return Object.entries(volleyball).map(([name, data]) => ({
-      name,
-      rating: Number((data as { rating?: number }).rating ?? 0),
-    }));
-  }
-
-  return PlayerList;
-}
-
-function ensureTempUser(state: UserStoreState): UserStoreState {
-  const existingTempUser = state.users.find((user) => user.id === TEMP_USER_ID);
-  if (existingTempUser) {
-    state.files[existingTempUser.dataFile] = state.files[existingTempUser.dataFile] ?? {
-      players: PlayerList,
-      importType: 'Manual',
-    };
-    return state;
-  }
-
-  const tempUser: StoredUserAccount = {
-    id: TEMP_USER_ID,
+const MOCK_USERS: MockUserAccount[] = [
+  {
+    id: 'temp',
     firstName: 'Temp',
     lastName: 'User',
-    username: TEMP_USER_EMAIL,
-    email: TEMP_USER_EMAIL,
-    password: TEMP_USER_PASSWORD,
+    username: 'temp',
+    password: 'temp',
     dataFile: 'temp.json',
-    createdAt: new Date().toISOString(),
-  };
+    createdAt: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'user-ada',
+    firstName: 'Ada',
+    lastName: 'Lovelace',
+    username: 'ada@example.com',
+    password: 'Password1',
+    dataFile: 'user-ada.json',
+    createdAt: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'user-grace',
+    firstName: 'Grace',
+    lastName: 'Hopper',
+    username: 'grace@example.com',
+    password: 'Password2',
+    dataFile: 'user-grace.json',
+    createdAt: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'user-margaret',
+    firstName: 'Margaret',
+    lastName: 'Hamilton',
+    username: 'margaret@example.com',
+    password: 'Password3',
+    dataFile: 'user-margaret.json',
+    createdAt: '2026-01-01T00:00:00.000Z',
+  },
+];
 
-  state.users = [tempUser, ...state.users];
-  state.files[tempUser.dataFile] = {
+const DEFAULT_PLAYERS_BY_USER: Record<string, PlayerData> = {
+  temp: {
     players: PlayerList,
     importType: 'Manual',
-  };
+  },
+};
 
-  if (typeof window !== 'undefined') {
-    window.localStorage.setItem(USER_STORE_KEY, JSON.stringify(state));
-  }
-
-  return state;
+function getMockUserById(userId: string) {
+  return MOCK_USERS.find((user) => user.id === userId) ?? null;
 }
 
-function readStoreState(): UserStoreState {
-  const repoIndex = buildProfileIndexFromRepo();
-  const seededUsers = Object.entries(repoIndex).map(([id, entry]) => ({
-    id,
-    firstName: entry.username,
-    lastName: 'User',
-    username: entry.username,
-    email: entry.username,
-    password: entry.password,
-    dataFile: entry.profileData.replace('/profiles/', ''),
-    createdAt: new Date().toISOString(),
-  }));
-
-  const seedFiles = {
-    'temp.json': {
-      players: parseProfilePlayers(tempProfile),
-      importType: 'Manual' as const,
-    },
+function stripPassword(user: MockUserAccount): StoredUserAccount {
+  return {
+    id: user.id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    username: user.username,
+    dataFile: user.dataFile,
+    createdAt: user.createdAt,
   };
+}
 
-  const repoState = {
-    users: seededUsers,
-    files: seedFiles,
-  };
-
+function readStoredPlayers(userId: string): PlayerData | null {
   if (typeof window === 'undefined') {
-    return ensureTempUser(repoState);
+    return DEFAULT_PLAYERS_BY_USER[userId] ?? null;
+  }
+
+  const raw = window.localStorage.getItem(`${PLAYER_DATA_PREFIX}${userId}`);
+  if (!raw) {
+    return DEFAULT_PLAYERS_BY_USER[userId] ?? null;
   }
 
   try {
-    const raw = window.localStorage.getItem(USER_STORE_KEY);
-    if (!raw) {
-      return ensureTempUser(repoState);
-    }
-
-    const persistedState = JSON.parse(raw) as UserStoreState;
-    const mergedUsersById = new Map<string, StoredUserAccount>();
-    repoState.users.forEach((user) => mergedUsersById.set(user.id, user));
-    (persistedState.users ?? []).forEach((user) => mergedUsersById.set(user.id, user));
-
-    const mergedFiles = {
-      ...seedFiles,
-      ...(persistedState.files ?? {}),
-    };
-
-    return ensureTempUser({
-      users: Array.from(mergedUsersById.values()),
-      files: mergedFiles,
-    });
+    return JSON.parse(raw) as PlayerData;
   } catch (error) {
-    console.error('Unable to read user store state', error);
-    return ensureTempUser(repoState);
+    console.error('Unable to parse stored players', error);
+    return DEFAULT_PLAYERS_BY_USER[userId] ?? null;
   }
 }
 
-function writeStoreState(state: UserStoreState) {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  window.localStorage.setItem(USER_STORE_KEY, JSON.stringify(state));
+export async function createUserAccount() {
+  throw new Error('Sign up is temporarily disabled. Please use one of the demo accounts.');
 }
 
-function getUserState(): UserStoreState {
-  return readStoreState();
-}
+export async function authenticateUser(username: string, password: string) {
+  const normalizedUsername = username.trim().toLowerCase();
+  const user = MOCK_USERS.find((candidate) => (
+    candidate.username.toLowerCase() === normalizedUsername
+    && candidate.password === password
+  ));
 
-function getUserByEmail(email: string) {
-  const state = getUserState();
-  return state.users.find((user) => user.email.toLowerCase() === email.toLowerCase()) ?? null;
-}
-
-function getUserByIdentifier(identifier: string) {
-  const state = getUserState();
-  const normalizedIdentifier = identifier.toLowerCase();
-
-  return state.users.find((user) => {
-    const usernameMatch = user.username?.toLowerCase() === normalizedIdentifier;
-    const emailMatch = user.email?.toLowerCase() === normalizedIdentifier;
-    return usernameMatch || emailMatch;
-  }) ?? null;
-}
-
-function getUserById(userId: string) {
-  const state = getUserState();
-  return state.users.find((user) => user.id === userId) ?? null;
-}
-
-export function createUserAccount(account: Omit<StoredUserAccount, 'id' | 'dataFile' | 'createdAt'>) {
-  const state = getUserState();
-
-  if (getUserByEmail(account.email)) {
-    throw new Error('An account already exists for this email address.');
-  }
-
-  const userId = `user-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  const dataFile = `${userId}.json`;
-  const newUser: StoredUserAccount = {
-    ...account,
-    username: account.email,
-    id: userId,
-    dataFile,
-    createdAt: new Date().toISOString(),
-  };
-
-  state.users = [...state.users, newUser];
-  state.files[dataFile] = {
-    players: [],
-    importType: 'Manual',
-  };
-
-  const newProfileEntry: RepoProfileEntry = {
-    username: account.email,
-    password: account.password,
-    profileData: `/profiles/${dataFile}`,
-  };
-
-  const nextIndex = {
-    ...buildProfileIndexFromRepo(),
-    [userId]: newProfileEntry,
-  };
-
-  writeProfileIndexToRepo(nextIndex);
-  createProfileFile(userId, account.email, account.password);
-  writeStoreState(state);
-
-  return newUser;
-}
-
-export function authenticateUser(username: string, password: string) {
-  const user = getUserByIdentifier(username);
-
-  if (!user || user.password !== password) {
-    return null;
-  }
-
-  return user;
+  return user ? stripPassword(user) : null;
 }
 
 export function saveActiveUser(userId: string) {
@@ -315,7 +125,7 @@ export function saveActiveUser(userId: string) {
   window.localStorage.setItem(ACTIVE_USER_KEY, userId);
 }
 
-export function getActiveUser() {
+export async function getActiveUser() {
   if (typeof window === 'undefined') {
     return null;
   }
@@ -325,7 +135,8 @@ export function getActiveUser() {
     return null;
   }
 
-  return getUserById(userId);
+  const user = getMockUserById(userId);
+  return user ? stripPassword(user) : null;
 }
 
 export function clearActiveUser() {
@@ -334,45 +145,23 @@ export function clearActiveUser() {
   }
 
   window.localStorage.removeItem(ACTIVE_USER_KEY);
-  window.localStorage.removeItem(USER_STORE_KEY);
-  window.localStorage.removeItem(PROFILE_INDEX_STORE_KEY);
-
-  const profileKeys = Object.keys(window.localStorage).filter((key) => key.startsWith(PROFILE_DATA_STORE_PREFIX));
-  profileKeys.forEach((key) => window.localStorage.removeItem(key));
 }
 
-export function saveUserPlayers(userId: string, playerData: PlayerData) {
-  const state = getUserState();
-  const user = getUserById(userId);
-
-  if (!user) {
+export async function saveUserPlayers(userId: string, playerData: PlayerData) {
+  if (typeof window === 'undefined') {
     return;
   }
 
-  state.files[user.dataFile] = playerData;
-  writeStoreState(state);
+  window.localStorage.setItem(`${PLAYER_DATA_PREFIX}${userId}`, JSON.stringify(playerData));
 }
 
-export function getUserPlayers(userId: string) {
-  const user = getUserById(userId);
-  if (!user) {
-    return null;
-  }
-
-  return getUserState().files[user.dataFile] ?? null;
+export async function getUserPlayers(userId: string) {
+  return readStoredPlayers(userId);
 }
 
-export function clearUserPlayers(userId: string) {
-  const state = getUserState();
-  const user = getUserById(userId);
-
-  if (!user) {
-    return;
-  }
-
-  state.files[user.dataFile] = {
+export async function clearUserPlayers(userId: string) {
+  await saveUserPlayers(userId, {
     players: [],
     importType: 'Manual',
-  };
-  writeStoreState(state);
+  });
 }

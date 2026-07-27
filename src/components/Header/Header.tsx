@@ -14,11 +14,16 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, onToggleSidebar, isLogge
   return (
     <header>
       {isLoggedIn && 
-        <button className="menu-icon" onClick={onToggleSidebar}>
+        <button
+          className="menu-icon"
+          onClick={onToggleSidebar}
+          aria-label={isSidebarOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          title={isSidebarOpen ? 'Close menu' : 'Open menu'}
+        >
           <FontAwesomeIcon icon={(isSidebarOpen ? faArrowLeft : faBars) as IconProp} />
         </button>
       }
-      <h1 className="title">Balanced Team Generator</h1>
+      <h1 className="title">Club Roster Builder</h1>
     </header>
   );
 };

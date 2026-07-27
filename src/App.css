@@ -1,33 +1,95 @@
-/* App.css */
+:root {
+  --bg: #f3f7f6;
+  --surface: #ffffff;
+  --surface-2: #eef4f3;
+  --text: #102a2a;
+  --muted: #4b6565;
+  --accent: #0f766e;
+  --accent-2: #0a4f4a;
+  --border: #d2e4e1;
+  --danger: #b42318;
+  --shadow: 0 10px 30px rgba(10, 79, 74, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at 85% 8%, #dff7f0 0%, #f3f7f6 38%, #f0f3fa 100%);
+  color: var(--text);
+}
 
 .App {
   display: flex;
-  height: 100vh;
-  overflow: hidden; /* Hide the overflowing content */
+  min-height: 100vh;
 }
 
 .leftHide {
-  display: none; /* Initially hide the sidebar */
+  display: none;
+}
+
+.leftDisplay {
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+  background: #10302d;
 }
 
 .right {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  width: 70%;
 }
 
-.right .hide{
+.right.hide {
   width: 100%;
-}
-
-.leftDisplay {
-  display: flex;
-  flex-direction: column;
-  width: 30%;
 }
 
 .content {
   overflow: auto;
-  padding: 0;
+  padding: 20px;
+}
+
+.page-loading {
+  min-height: 50vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  color: var(--muted);
+}
+
+button,
+input,
+select,
+textarea,
+a {
+  font: inherit;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+  outline: 3px solid rgba(15, 118, 110, 0.35);
+  outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+  .leftDisplay {
+    width: 100%;
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 40;
+    max-width: 280px;
+  }
+
+  .content {
+    padding: 16px;
+  }
 }

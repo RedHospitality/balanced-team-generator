@@ -1,25 +1,44 @@
 header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 10px;
-  background-color: #333; /* You can change the background color */
-  color: #fff; /* Text color */
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
 }
 
 .menu-icon {
-  background-color: darkcyan;
-  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--accent-2);
   cursor: pointer;
-  font-size: 1.2em;
-  color: #eaa7a7; /* Button color */
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-icon:hover {
+  background: var(--surface-2);
 }
 
 .title {
   margin: 0;
-  font-size: 1.5em;
-  text-align: center;
-  flex-grow: 1; /* Ensures that the title takes up the remaining space */
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--text);
 }
 
-/* Add more styles as needed */
+@media (max-width: 600px) {
+  .title {
+    font-size: 1rem;
+  }
+}

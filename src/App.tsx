@@ -26,6 +26,7 @@ export const UserContext = createContext<AppUserContext>({
 const App: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
   const [userPlayers, setUserPlayers] = useState<PlayerModel[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
@@ -34,42 +35,70 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    const activeUser = getActiveUser();
-    if (activeUser) {
-      setIsLoggedIn(true);
-      setCurrentUserId(activeUser.id);
-      const storedPlayers = getUserPlayers(activeUser.id);
-      setUserPlayers(storedPlayers?.players ?? []);
-    }
+    const initializeSession = async () => {
+      try {
+        const activeUser = await getActiveUser();
+        if (activeUser) {
+          setIsLoggedIn(true);
+          setCurrentUserId(activeUser.id);
+          const storedPlayers = await getUserPlayers(activeUser.id);
+          setUserPlayers(storedPlayers?.players ?? []);
+        } else {
+          setIsLoggedIn(false);
+          setCurrentUserId(null);
+          setUserPlayers([]);
+        }
+      } finally {
+        setIsAuthLoading(false);
+      }
+    };
+
+    void initializeSession();
   }, []);
 
-  const handleLoginSuccess = (userId: string | null) => {
+  const handleLoginSuccess = async (userId: string | null) => {
     setIsLoggedIn(Boolean(userId));
     setCurrentUserId(userId);
     if (userId) {
-      const storedPlayers = getUserPlayers(userId);
+      const storedPlayers = await getUserPlayers(userId);
       setUserPlayers(storedPlayers?.players ?? []);
+    } else {
+      setUserPlayers([]);
     }
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setCurrentUserId(null);
+    setUserPlayers([]);
+    setIsSidebarOpen(false);
   };
 
   return (
     <UserContext.Provider value={{ userPlayers, setUserPlayers, currentUserId }}>
-      <Router>
+      <Router basename="/balanced-team-generator">
         <div className="App">
-          <div className={`${isSidebarOpen ? 'leftDisplay' : 'leftHide'}`}>
-            <Sidebar isOpen={isSidebarOpen} onToggleSidebar={handleToggleSidebar} />
-          </div>
+          {isLoggedIn && !isAuthLoading && (
+            <div className={`${isSidebarOpen ? 'leftDisplay' : 'leftHide'}`}>
+              <Sidebar isOpen={isSidebarOpen} onToggleSidebar={handleToggleSidebar} onLogout={handleLogout} />
+            </div>
+          )}
 
-          <div className={`right ${isSidebarOpen ? '' : 'hide'}`}>
+          <div className={`right ${isSidebarOpen && isLoggedIn ? '' : 'hide'}`}>
             <Header isSidebarOpen={isSidebarOpen} onToggleSidebar={handleToggleSidebar} isLoggedIn={isLoggedIn} />
             <div className="content">
-              <Routes>
-                <Route path={PATH.BASE_PATH} element={isLoggedIn ? <Navigate to={PATH.PLAYER_PATH} /> : <Navigate to={PATH.LOGIN_PATH} />} />
-                <Route path={PATH.LOGIN_PATH} element={isLoggedIn ? <Navigate to={PATH.PLAYER_PATH} /> : <LoginPage onLogin={handleLoginSuccess} />} />
-                <Route path={PATH.HOME_PATH} element={isLoggedIn ? <Home /> : <Navigate to={PATH.LOGIN_PATH} />} />
-                <Route path={PATH.PLAYER_PATH} element={isLoggedIn ? <Players /> : <Navigate to={PATH.LOGIN_PATH} />} />
-                <Route path={PATH.CREATE_TEAMS_PATH} element={isLoggedIn ? <CreateTeamsWorkflow /> : <Navigate to={PATH.LOGIN_PATH} />} />
-              </Routes>
+              {isAuthLoading ? (
+                <div className="page-loading" role="status" aria-live="polite">Loading your workspace...</div>
+              ) : (
+                <Routes>
+                  <Route path={PATH.BASE_PATH} element={isLoggedIn ? <Navigate to={PATH.PLAYER_PATH} replace /> : <Navigate to={PATH.LOGIN_PATH} replace />} />
+                  <Route path={PATH.LOGIN_PATH} element={isLoggedIn ? <Navigate to={PATH.PLAYER_PATH} replace /> : <LoginPage onLogin={(userId) => { void handleLoginSuccess(userId); }} />} />
+                  <Route path={PATH.HOME_PATH} element={isLoggedIn ? <Home /> : <Navigate to={PATH.LOGIN_PATH} replace />} />
+                  <Route path={PATH.PLAYER_PATH} element={isLoggedIn ? <Players /> : <Navigate to={PATH.LOGIN_PATH} replace />} />
+                  <Route path={PATH.CREATE_TEAMS_PATH} element={isLoggedIn ? <CreateTeamsWorkflow /> : <Navigate to={PATH.LOGIN_PATH} replace />} />
+                  <Route path="*" element={<Navigate to={PATH.BASE_PATH} replace />} />
+                </Routes>
+              )}
             </div>
           </div>
         </div>

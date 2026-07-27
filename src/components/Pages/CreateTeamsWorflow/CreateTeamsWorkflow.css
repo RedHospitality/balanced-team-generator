@@ -1,140 +1,176 @@
 .create-teams-workflow {
-    height: 100%;
-    max-width: 1000px;
+    max-width: 980px;
     margin: 0 auto;
-    padding: 0 10px;
+    padding: 10px 0;
 }
 
 .create-teams-workflow button:disabled {
-    background-color: #ccc;
+    background-color: #cfd8d7;
     cursor: not-allowed;
     opacity: 0.6;
 }
 
 .create-teams-workflow button {
-    background-color: rgb(232, 81, 81);
+    background-color: var(--accent);
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     padding: 10px 20px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 0.93rem;
     transition: background-color 0.3s ease;
 }
 
 .create-teams-workflow button:hover:not(:disabled) {
-    background-color: rgb(200, 60, 60);
+    background-color: var(--accent-2);
+}
+
+.workflow-headline {
+    margin-bottom: 12px;
+    text-align: left;
+}
+
+.workflow-headline h2 {
+    margin: 0 0 4px;
+}
+
+.workflow-headline p {
+    margin: 0;
+    color: var(--muted);
 }
 
 .tabs {
     display: flex;
-    margin-bottom: 0;
-    gap: 5px;
-}
-
-.number-overlay {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-weight: bold;
-    color: rgb(163, 10, 10);
-    font-size: 12px;
+    margin-bottom: 10px;
+    gap: 8px;
 }
 
 .tab {
     flex: 1;
-    padding: 15px 10px;
-    text-align: center;
+    padding: 10px;
+    text-align: left;
     cursor: pointer;
-    border: none;
+    border: 1px solid var(--border);
     transition: all 0.3s ease;
-    border-bottom: 3px solid #ddd;
-    background-color: rgb(231, 234, 229);
+    background-color: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--text);
 }
 
 .tab:hover {
-    background-color: #c2e9c2;
+    background-color: var(--surface-2);
 }
 
 .tab.active {
-    color: #2c3e36;
-    border-bottom: 4px solid #001a00;
-    background-color: #92b6a8;
+    color: var(--text);
+    border: 1px solid var(--accent);
+    background-color: #ddf4f0;
     font-weight: 600;
 }
 
 .tab.done {
-    color: #2f4d2f;
-    background-color: #b3d6cb;
-    border-bottom: 3px solid #001a00;
+    color: #1f433f;
+    background-color: #e9f4f1;
+    border: 1px solid #b9d8d2;
 }
 
 .dot-icon {
-    font-size: 15px;
-    color: #0b3a0b;
-}
-
-.active .dot-icon {
-    color: #0b410b;
+    font-size: 13px;
+    color: var(--accent-2);
 }
 
 .done .dot-icon {
-    color: #46b846;
+    color: #1f7f69;
 }
 
 .content {
-    border: none;
-    background-color: transparent;
-    padding: 0;
-    border-radius: 0;
-    min-height: auto;
-    box-sizing: border-box;
-    display: flow-root;
-    overflow-x: hidden;
-    overflow-y: auto;
+    border: 1px solid var(--border);
+    background-color: var(--surface);
+    padding: 14px;
+    border-radius: 14px;
+    min-height: 420px;
+}
+
+.source-step {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.mode-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.source-card {
+    text-align: left;
+    background: linear-gradient(160deg, #f6f9f8, #edf5f4);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    padding: 16px;
+}
+
+.source-card h3 {
+    margin: 0 0 6px;
+}
+
+.source-card p {
+    margin: 0;
+    font-size: 0.92rem;
+    color: var(--muted);
+}
+
+.external-import-wrap {
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+}
+
+.workflow-error {
+    margin: 0;
+    color: var(--danger);
+    font-size: 0.92rem;
 }
 
 @media (max-width: 768px) {
     .create-teams-workflow {
-        padding: 0 5px;
+        padding: 0;
     }
-    
+
     .content {
-        padding: 12px;
-        min-height: auto;
-        box-sizing: border-box;
-        display: flow-root;
-        overflow-x: hidden;
-        overflow-y: auto;
+        min-height: 300px;
     }
-    
+
+    .mode-grid {
+        grid-template-columns: 1fr;
+    }
+
     .tab {
-        padding: 12px 5px;
+        padding: 10px 5px;
         font-size: 12px;
     }
 }
 
 @media (max-width: 480px) {
     .tabs {
-        gap: 2px;
+        gap: 4px;
     }
-    
+
     .tab {
-        padding: 10px 3px;
+        padding: 8px 4px;
         font-size: 11px;
     }
-    
+
     .dot-icon {
         font-size: 12px;
     }
-    
+
     .content {
         padding: 10px;
-        min-height: auto;
-        box-sizing: border-box;
-        display: flow-root;
-        overflow-x: hidden;
-        overflow-y: auto;
+        min-height: 280px;
     }
 }

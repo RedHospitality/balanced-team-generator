@@ -4,9 +4,11 @@ import { UserContext } from '../../../App';
 import { useNavigate } from 'react-router-dom';
 import { PATH } from '../../../constants/path';
 import { getUserPlayers, PlayerData } from '../../../utils/authStorageUtils';
+import PlayersImport from '../CreateTeamsWorflow/PlayersImport/PlayersImport';
 
 const Players = () => {
   const [playerData, setPlayerData] = useState<PlayerData | null>(null);
+  const [isImportOpen, setIsImportOpen] = useState<boolean>(false);
   const { setUserPlayers, currentUserId } = useContext(UserContext);
   const navigate = useNavigate();
 
@@ -21,38 +23,61 @@ const Players = () => {
   };
 
   useEffect(() => {
-    if (!currentUserId) {
-      return;
-    }
+    const loadPlayers = async () => {
+      if (!currentUserId) {
+        setPlayerData(null);
+        setUserPlayers([]);
+        return;
+      }
 
-    const data = getUserPlayers(currentUserId);
-    if (data) {
-      setPlayerData(data);
-      setUserPlayers(data.players);
-    } else {
-      setPlayerData(null);
-      setUserPlayers([]);
-    }
+      const data = await getUserPlayers(currentUserId);
+      if (data) {
+        setPlayerData(data);
+        setUserPlayers(data.players);
+      } else {
+        setPlayerData(null);
+        setUserPlayers([]);
+      }
+    };
+
+    void loadPlayers();
   }, [currentUserId, setUserPlayers]);
 
   return (
     <div className="players-page">
       <div className="players-header">
         <h1>Club Roster</h1>
-        <p className="players-subtitle">A growing overview of your players, ratings, and strengths.</p>
+        <p className="players-subtitle">Manage your saved roster here, then build balanced teams in one click.</p>
+        <div className="roster-actions">
+          <button className="primary-button" onClick={() => setIsImportOpen((prev) => !prev)}>
+            {isImportOpen ? 'Close Import' : playerData ? 'Update Roster' : 'Import Players'}
+          </button>
+          <button className="secondary-button" onClick={() => navigate(PATH.CREATE_TEAMS_PATH)} disabled={!playerData || playerData.players.length < 2}>
+            Build Teams
+          </button>
+        </div>
       </div>
+
+      {isImportOpen && (
+        <div className="import-panel">
+          <PlayersImport
+            playersData={playerData?.players ?? []}
+            setPlayersData={(players) => {
+              setUserPlayers(players);
+            }}
+            onPlayerDataReady={(nextData) => setPlayerData(nextData)}
+            persistImportedPlayers
+            allowedInputTypes={['manual', 'spreadsheet', 'dynamic insert']}
+            primaryActionLabel="Save To Roster"
+          />
+        </div>
+      )}
 
       {!playerData ? (
         <div className="empty-state">
           <div className="empty-state-icon">📋</div>
           <h3>No Players Imported</h3>
-          <p>You haven't imported any players yet. Add them here and then jump into the team builder when you're ready.</p>
-          <button 
-            className="primary-button" 
-            onClick={() => navigate(PATH.CREATE_TEAMS_PATH)}
-          >
-            Import Players
-          </button>
+          <p>Use the Import Players action above to create your roster, then open Team Builder.</p>
         </div>
       ) : (
         <div className="players-container">

@@ -13,27 +13,28 @@ interface DisplayTeamsProps {
 }
 
 const DisplayTeams: React.FC<DisplayTeamsProps> = ({ errorMessage, teams, onBack, onRegenerate }) => {
+    const [copiedMessage, setCopiedMessage] = React.useState<string | null>(null);
+
+    const buildTeamsText = () => teams
+        .map((team, index) => {
+            const playerList = team.players
+                .map((player, playerIndex) => `${playerIndex + 1}. ${player.name}`)
+                .join('\n');
+            return `Team ${index + 1} (Avg Rating: ${(team.totalRating / team.players.length).toFixed(2)})\n${playerList}`;
+        })
+        .join('\n\n');
 
     const handleShare = async () => {
-        const teamsText = teams
-            .map((team, index) => {
-                const playerList = team.players
-                    .map((player, playerIndex) => `${playerIndex + 1}. ${player.name}`)
-                    .join('\n');
-                return `Team ${index + 1} (Avg Rating: ${(team.totalRating / team.players.length).toFixed(2)})\n${playerList}`;
-            })
-            .join('\n\n');
+        const teamsText = buildTeamsText();
         try {
-            // Trigger the native sharing dialog
             if (navigator.share) {
                 await navigator.share({
                     title: 'Generated Teams',
                     text: teamsText,
                 });
             } else {
-                // Fallback to clipboard
                 await navigator.clipboard.writeText(teamsText);
-                alert('Teams data copied to clipboard! Paste it to share.');
+                setCopiedMessage('Teams copied to clipboard.');
             }
         } catch (error) {
             console.error('Error sharing:', error);
@@ -41,27 +42,19 @@ const DisplayTeams: React.FC<DisplayTeamsProps> = ({ errorMessage, teams, onBack
     };
 
     const handleCopy = async () => {
-        const teamsText = teams
-            .map((team, index) => {
-                const playerList = team.players
-                    .map((player, playerIndex) => `${playerIndex + 1}. ${player.name}`)
-                    .join('\n');
-                return `Team ${index + 1} (Avg Rating: ${(team.totalRating / team.players.length).toFixed(2)})\n${playerList}`;
-            })
-            .join('\n\n');
+        const teamsText = buildTeamsText();
         try {
             await navigator.clipboard.writeText(teamsText);
-            alert('Teams copied to clipboard!');
+            setCopiedMessage('Teams copied to clipboard.');
         } catch (error) {
             console.error('Error copying to clipboard:', error);
-            // Fallback for older browsers
             const textArea = document.createElement('textarea');
             textArea.value = teamsText;
             document.body.appendChild(textArea);
             textArea.select();
             document.execCommand('copy');
             document.body.removeChild(textArea);
-            alert('Teams copied to clipboard!');
+            setCopiedMessage('Teams copied to clipboard.');
         }
     };
 
@@ -101,15 +94,17 @@ const DisplayTeams: React.FC<DisplayTeamsProps> = ({ errorMessage, teams, onBack
                                 </ul>
                             </div>
                         ))}
-                        <span 
+                        <button
+                            type="button"
                             className="copy-button-float" 
                             onClick={handleCopy} 
                             aria-label="Copy teams to clipboard"
                             title="Copy teams"
                         >
                             <FontAwesomeIcon icon={faCopy as IconProp} />
-                        </span>
+                        </button>
                     </div>
+                    {copiedMessage && <p className="copied-message" role="status">{copiedMessage}</p>}
                     <p><strong>Not happy with the teams?</strong> Try generating new ones!</p>
                     <div className="button-group">
                         <button className="display-share-btn" onClick={handleShare} aria-label="Share teams">

@@ -10,18 +10,32 @@ import { normalizeGoogleSheetsUrl } from '../../../../utils/urlUtils';
 import { getUserPlayers, saveUserPlayers } from '../../../../utils/authStorageUtils';
 
 interface PlayersImportProps {
-  playersData: PlayerModel[],
-  setPlayersData: (players: PlayerModel[]) => void,
-  onNext: () => void,
+  playersData: PlayerModel[];
+  setPlayersData: (players: PlayerModel[]) => void;
+  onNext?: () => void;
+  persistImportedPlayers?: boolean;
+  allowedInputTypes?: Array<'manual' | 'spreadsheet' | 'user' | 'dynamic insert'>;
+  primaryActionLabel?: string;
+  onPlayerDataReady?: (playerData: { players: PlayerModel[]; importType: 'Manual' | 'Dynamic Insert' | 'Spreadsheet'; importUrl?: string }) => void;
 }
 
-const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersData, onNext }) => {
+const PlayersImport: React.FC<PlayersImportProps> = ({
+  playersData,
+  setPlayersData,
+  onNext,
+  persistImportedPlayers = true,
+  allowedInputTypes = ['manual', 'spreadsheet', 'dynamic insert', 'user'],
+  primaryActionLabel = 'Process',
+  onPlayerDataReady,
+}) => {
   const [dataInputType, setDataInputType] = useState<'manual' | 'spreadsheet' | 'user' | 'dynamic insert'>('spreadsheet');
   const [manualData, setManualData] = useState<string>('');
   const [spreadsheetUrl, setSpreadsheetUrl] = useState<string>('');
   const [spreadsheetType, setSpreadsheetType] = useState<'google' | 'microsoft'>('google');
   const [dynamicPlayers, setDynamicPlayers] = useState<PlayerModel[]>([{ name: '', rating: 1 }]);
   const [importError, setImportError] = useState<string | undefined>(undefined);
+  const [importSuccess, setImportSuccess] = useState<string | undefined>(undefined);
+  const [hasSavedPlayers, setHasSavedPlayers] = useState<boolean>(false);
   const { userPlayers, currentUserId } = useContext(UserContext);
 
   const fetchDataFromUrl = async (url: string, type: 'google' | 'microsoft'): Promise<string> => {
@@ -133,26 +147,49 @@ const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersDa
 
   /*TODO: Remove, just populating dummy data for now. */
   React.useEffect(() => {
-    if (currentUserId && getUserPlayers(currentUserId)) {
-      setDataInputType('user');
-    }
+    const detectSavedPlayers = async () => {
+      if (!currentUserId) {
+        setHasSavedPlayers(false);
+        return;
+      }
+
+      const storedData = await getUserPlayers(currentUserId);
+      const canUseSavedData = Boolean(storedData && storedData.players.length > 0);
+      setHasSavedPlayers(canUseSavedData);
+
+    };
+
+    void detectSavedPlayers();
   }, [currentUserId]);
 
+  React.useEffect(() => {
+    if (!allowedInputTypes.includes(dataInputType)) {
+      setDataInputType(allowedInputTypes[0] ?? 'manual');
+    }
+  }, [allowedInputTypes, dataInputType]);
+
   React.useEffect(()=> {
-    if(dataInputType === 'user' && currentUserId) {
-      const storedData = getUserPlayers(currentUserId);
+    const loadSavedPlayers = async () => {
+      if (dataInputType !== 'user' || !currentUserId) {
+        return;
+      }
+
+      const storedData = await getUserPlayers(currentUserId);
       if (storedData) {
         setPlayersData(storedData.players);
       } else {
         setPlayersData([]);
         setImportError('No saved player data found. Please import players first.');
       }
-    }
+    };
+
+    void loadSavedPlayers();
   }, [currentUserId, dataInputType, setPlayersData]);
 
   const handleProcessData = async () => {
     try {
       setImportError(undefined);
+      setImportSuccess(undefined);
       let processedPlayers: PlayerModel[] = [];
       let importType: 'Manual' | 'Dynamic Insert' | 'Spreadsheet' = 'Manual';
       let importUrl: string | undefined;
@@ -170,7 +207,7 @@ const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersDa
           throw new Error('Please sign in before using saved players.');
         }
 
-        const storedData = getUserPlayers(currentUserId);
+        const storedData = await getUserPlayers(currentUserId);
         if (storedData) {
           processedPlayers = storedData.players;
           importType = storedData.importType;
@@ -198,12 +235,20 @@ const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersDa
         importUrl
       };
 
-      if (currentUserId) {
-        saveUserPlayers(currentUserId, playerData);
+      onPlayerDataReady?.(playerData);
+
+      if (persistImportedPlayers && currentUserId) {
+        await saveUserPlayers(currentUserId, playerData);
+        setHasSavedPlayers(playerData.players.length > 0);
+        setImportSuccess(`Saved ${playerData.players.length} players to your roster.`);
+      } else {
+        setImportSuccess(`Loaded ${playerData.players.length} players for this run.`);
       }
 
       setPlayersData(sanitizedPlayers);
-      onNext();
+      if (onNext) {
+        onNext();
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred while importing players.';
       setImportError(errorMessage);
@@ -223,7 +268,7 @@ const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersDa
       return allPlayers.length < 2;
     }
     else if (dataInputType === 'user') {
-      return !currentUserId || !getUserPlayers(currentUserId);
+      return !currentUserId || !hasSavedPlayers;
     }
     return undefined;
   }
@@ -280,10 +325,10 @@ const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersDa
             onChange={(e) => setDataInputType(e.target.value as 'manual' | 'spreadsheet' | 'user' | 'dynamic insert')}
             aria-label="Select data import method"
           >
-            <option value="manual">Manual Input</option>
-            <option value="spreadsheet">Spreadsheet URL</option>
-            {currentUserId && getUserPlayers(currentUserId) && <option value="user">Use My Players</option>}
-            <option value="dynamic insert">Dynamic Insert</option>
+            {allowedInputTypes.includes('manual') && <option value="manual">Manual Input</option>}
+            {allowedInputTypes.includes('spreadsheet') && <option value="spreadsheet">Spreadsheet URL</option>}
+            {allowedInputTypes.includes('user') && currentUserId && hasSavedPlayers && <option value="user">Use My Players</option>}
+            {allowedInputTypes.includes('dynamic insert') && <option value="dynamic insert">Dynamic Insert</option>}
           </select>
         </div>
 
@@ -412,11 +457,17 @@ const PlayersImport: React.FC<PlayersImportProps> = ({ playersData, setPlayersDa
             </div>
           )}
 
-          <button className="process-btn" onClick={handleProcessData} disabled={disableProcessButton()}>Process</button>
+          {importSuccess && !onNext && (
+            <div style={{ color: '#166534', fontSize: '0.95em', marginBottom: '15px', padding: '12px', backgroundColor: '#dcfce7', borderRadius: '4px', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+              <strong>Saved:</strong> {importSuccess}
+            </div>
+          )}
+
+          <button className="process-btn" onClick={handleProcessData} disabled={disableProcessButton()}>{primaryActionLabel}</button>
         </div>
       </div>
       <p className="player-count">
-        Click Process To Import Players
+        {playersData.length > 0 ? `${playersData.length} players ready.` : 'Import at least two players to continue.'}
       </p>
     </div>
   );
