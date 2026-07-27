@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useMemo } from 'react';
 import './Players.css';
 import { UserContext } from '../../../App';
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +11,10 @@ const Players = () => {
   const [isImportOpen, setIsImportOpen] = useState<boolean>(false);
   const { setUserPlayers, currentUserId } = useContext(UserContext);
   const navigate = useNavigate();
+
+  const sortedPlayers = useMemo(() => (
+    [...(playerData?.players ?? [])].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
+  ), [playerData]);
 
   const getSourceIcon = (url: string) => {
     if (!url) return null;
@@ -112,7 +116,7 @@ const Players = () => {
           <div className="players-list-section">
             <h2 className="list-title">Player List</h2>
             <div className="players-list">
-              {playerData.players.map((player, index) => (
+              {sortedPlayers.map((player, index) => (
                 <div key={index} className="player-card">
                   <div className="player-info">
                     <div className="player-name">{player.name}</div>

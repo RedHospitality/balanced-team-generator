@@ -63,6 +63,33 @@
     color: var(--muted);
 }
 
+.guest-mode-section {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+
+.guest-mode-button {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.guest-mode-button:hover:not(:disabled) {
+    background: #e3efed;
+}
+
+.guest-mode-note {
+    margin: 8px 0 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
 .mode-toggle {
     border: 0;
     background: transparent;

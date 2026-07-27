@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useMemo } from 'react';
 import './SelectPlayers.css';
 import { PlayerModel } from '../Models/CreateTeamsModels';
 import { UserContext } from '../../../../App';
@@ -19,6 +19,9 @@ interface SelectPlayersProps {
 const SelectPlayers: React.FC<SelectPlayersProps> = ({ playersData, errorMessage, setErrorMessage, selectedPlayers,
     setSelectedPlayers, teamCount, setTeamCount, onBack, onNext }) => {
     const { currentUserId } = useContext(UserContext);
+    const sortedPlayers = useMemo(() => (
+        [...playersData].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
+    ), [playersData]);
     const initSelectAll = selectedPlayers ? selectedPlayers.length === playersData.length ? 'Yes' : 'Some' : 'No';
     const [selectAll, setSelectAll] = useState<string>(initSelectAll);
     const [storedData, setStoredData] = useState<PlayerData | null>(null);
@@ -43,23 +46,23 @@ const SelectPlayers: React.FC<SelectPlayersProps> = ({ playersData, errorMessage
 
     // Update selectAll state based on selectedPlayers
     useEffect(() => {
-        if (selectedPlayers.length === playersData.length && playersData.length > 0) {
+        if (selectedPlayers.length === sortedPlayers.length && sortedPlayers.length > 0) {
             setSelectAll('Yes');
         } else if (selectedPlayers.length > 0) {
             setSelectAll('Some');
         } else {
             setSelectAll('No');
         }
-    }, [selectedPlayers, playersData]);
+    }, [selectedPlayers, sortedPlayers]);
 
     // Update selectedPlayers based on selectAll state
     useEffect(() => {
         if (selectAll === 'Yes') {
-            setSelectedPlayers(playersData);
+            setSelectedPlayers(sortedPlayers);
         } else if (selectAll === 'No') {
             setSelectedPlayers([]);
         }
-    }, [selectAll, playersData, setSelectedPlayers]);
+    }, [selectAll, sortedPlayers, setSelectedPlayers]);
 
     useEffect(() => {
         const loadStoredData = async () => {
@@ -116,14 +119,20 @@ const SelectPlayers: React.FC<SelectPlayersProps> = ({ playersData, errorMessage
                         <p><b>Select All</b></p>
                         <hr className="separator" />
                     </div>
-                    {playersData.map((player) => (
+                    {sortedPlayers.map((player) => (
                         <div key={player.name} className="player-item">
                             <input
                                 type="checkbox"
                                 checked={selectedPlayers.includes(player)}
                                 onChange={() => handleCheckboxChange(player)}
                             />
-                            <p><b>{player.name + ": " + player.rating}</b></p>
+                            <div className="player-row-copy">
+                                <p><b>{player.name + ": " + player.rating}</b></p>
+                                <div className="player-attributes-inline">
+                                    {player.attributes?.net && <span className="attribute-chip-inline">Net</span>}
+                                    {player.attributes?.shooter && <span className="attribute-chip-inline">Shooter</span>}
+                                </div>
+                            </div>
                             <hr className="separator" />
                         </div>
                     ))}
@@ -145,12 +154,12 @@ const SelectPlayers: React.FC<SelectPlayersProps> = ({ playersData, errorMessage
                         />
                         <span className="team-count-value" aria-live="polite">{teamCount}</span>
                     </label>
-                    <div className="button-group">
+                    <div className="select-actions">
                     <button className="generate-teams-button" onClick={onBack} aria-label="Go back to import players">
                         Back
                     </button>
                     <button type="submit" className="generate-teams-button" disabled={selectedPlayers.length < 2} aria-label="Confirm player selection">
-                        Confirm
+                        Next
                     </button>
                     </div>
                 </form>

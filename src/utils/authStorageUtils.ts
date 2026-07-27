@@ -1,5 +1,5 @@
 import { PlayerModel } from '../components/Pages/CreateTeamsWorflow/Models/CreateTeamsModels';
-import { PlayerList } from '../mocks/PlayerMock';
+import { AdaPlayerList, GracePlayerList, MargaretPlayerList, PlayerList } from '../mocks/PlayerMock';
 
 export interface PlayerData {
   players: PlayerModel[];
@@ -16,6 +16,8 @@ export interface StoredUserAccount {
   dataFile: string;
   createdAt: string;
 }
+
+export const GUEST_USER_ID = 'guest-user';
 
 const ACTIVE_USER_KEY = 'balancedTeamGenerator.activeUser';
 const PLAYER_DATA_PREFIX = 'balancedTeamGenerator.players:';
@@ -68,10 +70,47 @@ const DEFAULT_PLAYERS_BY_USER: Record<string, PlayerData> = {
     players: PlayerList,
     importType: 'Manual',
   },
+  'user-ada': {
+    players: AdaPlayerList,
+    importType: 'Manual',
+  },
+  'user-grace': {
+    players: GracePlayerList,
+    importType: 'Manual',
+  },
+  'user-margaret': {
+    players: MargaretPlayerList,
+    importType: 'Manual',
+  },
 };
+
+function clonePlayers(players: PlayerModel[]): PlayerModel[] {
+  return players.map((player) => ({
+    ...player,
+    attributes: player.attributes ? { ...player.attributes } : undefined,
+  }));
+}
+
+function clonePlayerData(playerData: PlayerData): PlayerData {
+  return {
+    ...playerData,
+    players: clonePlayers(playerData.players),
+  };
+}
 
 function getMockUserById(userId: string) {
   return MOCK_USERS.find((user) => user.id === userId) ?? null;
+}
+
+function getGuestUser(): StoredUserAccount {
+  return {
+    id: GUEST_USER_ID,
+    firstName: 'Guest',
+    lastName: 'User',
+    username: 'guest',
+    dataFile: 'guest-user.json',
+    createdAt: '2026-01-01T00:00:00.000Z',
+  };
 }
 
 function stripPassword(user: MockUserAccount): StoredUserAccount {
@@ -86,20 +125,22 @@ function stripPassword(user: MockUserAccount): StoredUserAccount {
 }
 
 function readStoredPlayers(userId: string): PlayerData | null {
+  const defaultPlayerData = DEFAULT_PLAYERS_BY_USER[userId] ?? null;
+
   if (typeof window === 'undefined') {
-    return DEFAULT_PLAYERS_BY_USER[userId] ?? null;
+    return defaultPlayerData ? clonePlayerData(defaultPlayerData) : null;
   }
 
   const raw = window.localStorage.getItem(`${PLAYER_DATA_PREFIX}${userId}`);
   if (!raw) {
-    return DEFAULT_PLAYERS_BY_USER[userId] ?? null;
+    return defaultPlayerData ? clonePlayerData(defaultPlayerData) : null;
   }
 
   try {
     return JSON.parse(raw) as PlayerData;
   } catch (error) {
     console.error('Unable to parse stored players', error);
-    return DEFAULT_PLAYERS_BY_USER[userId] ?? null;
+    return defaultPlayerData ? clonePlayerData(defaultPlayerData) : null;
   }
 }
 
@@ -133,6 +174,10 @@ export async function getActiveUser() {
   const userId = window.localStorage.getItem(ACTIVE_USER_KEY);
   if (!userId) {
     return null;
+  }
+
+  if (userId === GUEST_USER_ID) {
+    return getGuestUser();
   }
 
   const user = getMockUserById(userId);

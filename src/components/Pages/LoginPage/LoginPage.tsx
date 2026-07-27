@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import './LoginPage.css';
 import { useNavigate } from 'react-router-dom';
 import { PATH } from '../../../constants/path';
-import { authenticateUser, saveActiveUser } from '../../../utils/authStorageUtils';
+import { authenticateUser, GUEST_USER_ID, saveActiveUser } from '../../../utils/authStorageUtils';
 
 interface LoginPageProps {
   onLogin: (userId: string | null) => void | Promise<void>;
+  showDemoAccounts?: boolean;
 }
 
-const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
+const LoginPage: React.FC<LoginPageProps> = ({ onLogin, showDemoAccounts = false }) => {
   const navigate = useNavigate();
 
   const [username, setUsername] = useState('');
@@ -38,6 +39,18 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
       navigate(PATH.PLAYER_PATH);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Unable to sign in right now.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleGuestMode = async () => {
+    setErrorMessage(null);
+    setIsSubmitting(true);
+    try {
+      saveActiveUser(GUEST_USER_ID);
+      await onLogin(GUEST_USER_ID);
+      navigate(PATH.CREATE_TEAMS_PATH);
     } finally {
       setIsSubmitting(false);
     }
@@ -77,15 +90,24 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         <button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Please wait...' : 'Login'}</button>
       </form>
 
-      <div className="demo-accounts">
-        <h3>Demo Accounts</h3>
-        <ul>
-          <li><strong>temp</strong> / <strong>temp</strong></li>
-          <li><strong>ada@example.com</strong> / <strong>Password1</strong></li>
-          <li><strong>grace@example.com</strong> / <strong>Password2</strong></li>
-          <li><strong>margaret@example.com</strong> / <strong>Password3</strong></li>
-        </ul>
+      <div className="guest-mode-section">
+        <button type="button" className="guest-mode-button" onClick={() => void handleGuestMode()} disabled={isSubmitting}>
+          Continue As Guest
+        </button>
+        <p className="guest-mode-note">Guest mode opens Team Builder only. Dashboard/Profile features are disabled.</p>
       </div>
+
+      {showDemoAccounts && (
+        <div className="demo-accounts">
+          <h3>Demo Accounts</h3>
+          <ul>
+            <li><strong>temp</strong> / <strong>temp</strong></li>
+            <li><strong>ada@example.com</strong> / <strong>Password1</strong></li>
+            <li><strong>grace@example.com</strong> / <strong>Password2</strong></li>
+            <li><strong>margaret@example.com</strong> / <strong>Password3</strong></li>
+          </ul>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,6 +1,6 @@
 {
   "homepage": "http://vickykum.github.io/balanced-team-generator",
-  "name": "balanced-team-generator",
+  "name": "draftmaster",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

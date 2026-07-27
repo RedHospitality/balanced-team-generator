@@ -106,7 +106,7 @@ const DisplayTeams: React.FC<DisplayTeamsProps> = ({ errorMessage, teams, onBack
                     </div>
                     {copiedMessage && <p className="copied-message" role="status">{copiedMessage}</p>}
                     <p><strong>Not happy with the teams?</strong> Try generating new ones!</p>
-                    <div className="button-group">
+                    <div className="display-actions">
                         <button className="display-share-btn" onClick={handleShare} aria-label="Share teams">
                             <FontAwesomeIcon icon={faShareFromSquare as IconProp} />
                             {" Share"}
