@@ -23,7 +23,7 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, onToggleSidebar, isLogge
           <FontAwesomeIcon icon={(isSidebarOpen ? faArrowLeft : faBars) as IconProp} />
         </button>
       }
-      <h1 className="title">Club Roster Builder</h1>
+      <h1 className="title">DraftMaster</h1>
     </header>
   );
 };

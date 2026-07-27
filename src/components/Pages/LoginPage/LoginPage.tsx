@@ -46,7 +46,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   return (
     <div className="login-page">
       <div className="login-brand">
-        <h1>Club Roster Builder</h1>
+        <h1>DraftMaster</h1>
         <p>Sign in with a demo account to manage your roster and build balanced teams.</p>
       </div>
 
