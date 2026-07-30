@@ -12,9 +12,9 @@ const Home: React.FC = () => {
 
   return (
     <div className="home-container">
-      <h1 className="home-title">About DraftMaster</h1>
+      <h1 className="home-title">About Draft Master</h1>
       <p className="description">
-        DraftMaster helps a club keep one shared view of its players and turn that roster into balanced teams for practice, scrimmages, or match day.
+        Draft Master helps a club keep one shared view of its players and turn that roster into balanced teams for practice, scrimmages, or match day.
       </p>
 
       <div className="features-container">

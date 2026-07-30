@@ -19,8 +19,8 @@ export interface StoredUserAccount {
 
 export const GUEST_USER_ID = 'guest-user';
 
-const ACTIVE_USER_KEY = 'balancedTeamGenerator.activeUser';
-const PLAYER_DATA_PREFIX = 'balancedTeamGenerator.players:';
+const ACTIVE_USER_KEY = 'draft-master.activeUser';
+const PLAYER_DATA_PREFIX = 'draft-master.players:';
 
 interface MockUserAccount extends StoredUserAccount {
   password: string;

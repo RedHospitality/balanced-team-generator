@@ -59,7 +59,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, showDemoAccounts = false
   return (
     <div className="login-page">
       <div className="login-brand">
-        <h1>DraftMaster</h1>
+        <h1>Draft Master</h1>
         <p>Sign in with a demo account to manage your roster and build balanced teams.</p>
       </div>
 

@@ -7,7 +7,7 @@ export interface PlayerData {
   importUrl?: string; // For spreadsheet imports
 }
 
-const COOKIE_NAME = 'balancedTeamPlayerData';
+const COOKIE_NAME = 'draft-master-player-data';
 const COOKIE_EXPIRY_DAYS = 30;
 
 /**

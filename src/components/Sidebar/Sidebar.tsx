@@ -28,7 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggleSidebar, onLogout, is
   return (
     <nav className={isOpen ? 'open' : ''} aria-label="Primary navigation">
       <div className="sidebar-top">
-        <span className="sidebar-brand">DraftMaster</span>
+        <span className="sidebar-brand">Draft Master</span>
         <button
           type="button"
           className="sidebar-close"

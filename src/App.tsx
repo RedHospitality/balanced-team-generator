@@ -79,7 +79,7 @@ const App: React.FC = () => {
 
   return (
     <UserContext.Provider value={{ userPlayers, setUserPlayers, currentUserId, isGuestMode }}>
-      <Router basename="/balanced-team-generator">
+      <Router basename="/draft-master">
         <div className="App">
           {isLoggedIn && !isAuthLoading && (
             <div className={`${isSidebarOpen ? 'leftDisplay' : 'leftHide'}`}>

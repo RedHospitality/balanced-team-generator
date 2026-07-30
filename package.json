@@ -1,6 +1,6 @@
 {
-  "homepage": "http://vickykum.github.io/balanced-team-generator",
-  "name": "draftmaster",
+  "homepage": "https://redhospitality.github.io/draft-master",
+  "name": "draft-master",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
